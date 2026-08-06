@@ -1,0 +1,539 @@
+{
+  "generatedAt": "2026-05-31",
+  "byCbsa": {
+    "10380": {
+      "cbsa": "10380",
+      "name": "Aguadilla-Isabela",
+      "population": 308919,
+      "medianIncome": 19455
+    },
+    "10500": {
+      "cbsa": "10500",
+      "name": "Albany",
+      "population": 147716,
+      "medianIncome": 53173
+    },
+    "10740": {
+      "cbsa": "10740",
+      "name": "Albuquerque",
+      "population": 915968,
+      "medianIncome": 63971
+    },
+    "10780": {
+      "cbsa": "10780",
+      "name": "Alexandria",
+      "population": 151721,
+      "medianIncome": 55650
+    },
+    "11100": {
+      "cbsa": "11100",
+      "name": "Amarillo",
+      "population": 269278,
+      "medianIncome": 64147
+    },
+    "11540": {
+      "cbsa": "11540",
+      "name": "Appleton",
+      "population": 242972,
+      "medianIncome": 79958
+    },
+    "11700": {
+      "cbsa": "11700",
+      "name": "Asheville",
+      "population": 469484,
+      "medianIncome": 64538
+    },
+    "12540": {
+      "cbsa": "12540",
+      "name": "Bakersfield",
+      "population": 906883,
+      "medianIncome": 63883
+    },
+    "12700": {
+      "cbsa": "12700",
+      "name": "Barnstable Town",
+      "population": 229436,
+      "medianIncome": 90447
+    },
+    "12940": {
+      "cbsa": "12940",
+      "name": "Baton Rouge",
+      "population": 869755,
+      "medianIncome": 67979
+    },
+    "13460": {
+      "cbsa": "13460",
+      "name": "Bend",
+      "population": 199352,
+      "medianIncome": 82042
+    },
+    "14100": {
+      "cbsa": "14100",
+      "name": "Bloomsburg-Berwick",
+      "population": 83089,
+      "medianIncome": 61559
+    },
+    "14540": {
+      "cbsa": "14540",
+      "name": "Bowling Green",
+      "population": 180624,
+      "medianIncome": 60914
+    },
+    "15380": {
+      "cbsa": "15380",
+      "name": "Buffalo-Cheektowaga",
+      "population": 1163462,
+      "medianIncome": 67638
+    },
+    "16300": {
+      "cbsa": "16300",
+      "name": "Cedar Rapids",
+      "population": 275693,
+      "medianIncome": 75477
+    },
+    "16580": {
+      "cbsa": "16580",
+      "name": "Champaign-Urbana",
+      "population": 223223,
+      "medianIncome": 62281
+    },
+    "17860": {
+      "cbsa": "17860",
+      "name": "Columbia",
+      "population": 211078,
+      "medianIncome": 65863
+    },
+    "18020": {
+      "cbsa": "18020",
+      "name": "Columbus",
+      "population": 82371,
+      "medianIncome": 76912
+    },
+    "18880": {
+      "cbsa": "18880",
+      "name": "Crestview-Fort Walton Beach-Destin",
+      "population": 288639,
+      "medianIncome": 74279
+    },
+    "19140": {
+      "cbsa": "19140",
+      "name": "Dalton",
+      "population": 143096,
+      "medianIncome": 60017
+    },
+    "19660": {
+      "cbsa": "19660",
+      "name": "Deltona-Daytona Beach-Ormond Beach",
+      "population": 676035,
+      "medianIncome": 64197
+    },
+    "19740": {
+      "cbsa": "19740",
+      "name": "Denver-Aurora-Lakewood",
+      "population": 2959386,
+      "medianIncome": 96920
+    },
+    "20220": {
+      "cbsa": "20220",
+      "name": "Dubuque",
+      "population": 98812,
+      "medianIncome": 73495
+    },
+    "20260": {
+      "cbsa": "20260",
+      "name": "Duluth",
+      "population": 291491,
+      "medianIncome": 67612
+    },
+    "21500": {
+      "cbsa": "21500",
+      "name": "Erie",
+      "population": 270495,
+      "medianIncome": 59396
+    },
+    "22140": {
+      "cbsa": "22140",
+      "name": "Farmington",
+      "population": 121798,
+      "medianIncome": 50734
+    },
+    "22180": {
+      "cbsa": "22180",
+      "name": "Fayetteville",
+      "population": 522537,
+      "medianIncome": 57488
+    },
+    "22500": {
+      "cbsa": "22500",
+      "name": "Florence",
+      "population": 200040,
+      "medianIncome": 52401
+    },
+    "22660": {
+      "cbsa": "22660",
+      "name": "Fort Collins",
+      "population": 359363,
+      "medianIncome": 87199
+    },
+    "24140": {
+      "cbsa": "24140",
+      "name": "Goldsboro",
+      "population": 117480,
+      "medianIncome": 54323
+    },
+    "24260": {
+      "cbsa": "24260",
+      "name": "Grand Island",
+      "population": 76726,
+      "medianIncome": 63314
+    },
+    "24580": {
+      "cbsa": "24580",
+      "name": "Green Bay",
+      "population": 328011,
+      "medianIncome": 74208
+    },
+    "24660": {
+      "cbsa": "24660",
+      "name": "Greensboro-High Point",
+      "population": 775169,
+      "medianIncome": 59567
+    },
+    "24860": {
+      "cbsa": "24860",
+      "name": "Greenville-Anderson",
+      "population": 931405,
+      "medianIncome": 66226
+    },
+    "25220": {
+      "cbsa": "25220",
+      "name": "Hammond",
+      "population": 133953,
+      "medianIncome": 55274
+    },
+    "25260": {
+      "cbsa": "25260",
+      "name": "Hanford-Corcoran",
+      "population": 152515,
+      "medianIncome": 68540
+    },
+    "25420": {
+      "cbsa": "25420",
+      "name": "Harrisburg-Carlisle",
+      "population": 593318,
+      "medianIncome": 76189
+    },
+    "26300": {
+      "cbsa": "26300",
+      "name": "Hot Springs",
+      "population": 100021,
+      "medianIncome": 54229
+    },
+    "26620": {
+      "cbsa": "26620",
+      "name": "Huntsville",
+      "population": 493980,
+      "medianIncome": 78521
+    },
+    "27260": {
+      "cbsa": "27260",
+      "name": "Jacksonville",
+      "population": 1613587,
+      "medianIncome": 73194
+    },
+    "27620": {
+      "cbsa": "27620",
+      "name": "Jefferson City",
+      "population": 150182,
+      "medianIncome": 70195
+    },
+    "28100": {
+      "cbsa": "28100",
+      "name": "Kankakee",
+      "population": 107421,
+      "medianIncome": 65489
+    },
+    "28420": {
+      "cbsa": "28420",
+      "name": "Kennewick-Richland",
+      "population": 304252,
+      "medianIncome": 82146
+    },
+    "28700": {
+      "cbsa": "28700",
+      "name": "Kingsport-Bristol",
+      "population": 308386,
+      "medianIncome": 53644
+    },
+    "29180": {
+      "cbsa": "29180",
+      "name": "Lafayette",
+      "population": 479865,
+      "medianIncome": 58150
+    },
+    "29460": {
+      "cbsa": "29460",
+      "name": "Lakeland-Winter Haven",
+      "population": 736229,
+      "medianIncome": 60901
+    },
+    "29940": {
+      "cbsa": "29940",
+      "name": "Lawrence",
+      "population": 119094,
+      "medianIncome": 66153
+    },
+    "30340": {
+      "cbsa": "30340",
+      "name": "Lewiston-Auburn",
+      "population": 111532,
+      "medianIncome": 64500
+    },
+    "30460": {
+      "cbsa": "30460",
+      "name": "Lexington-Fayette",
+      "population": 515954,
+      "medianIncome": 68089
+    },
+    "32820": {
+      "cbsa": "32820",
+      "name": "Memphis",
+      "population": 1335804,
+      "medianIncome": 62178
+    },
+    "33140": {
+      "cbsa": "33140",
+      "name": "Michigan City-La Porte",
+      "population": 112215,
+      "medianIncome": 66854
+    },
+    "33260": {
+      "cbsa": "33260",
+      "name": "Midland",
+      "population": 174621,
+      "medianIncome": 89345
+    },
+    "33460": {
+      "cbsa": "33460",
+      "name": "Minneapolis-St. Paul-Bloomington",
+      "population": 3678328,
+      "medianIncome": 94673
+    },
+    "33740": {
+      "cbsa": "33740",
+      "name": "Monroe",
+      "population": 206072,
+      "medianIncome": 47351
+    },
+    "34060": {
+      "cbsa": "34060",
+      "name": "Morgantown",
+      "population": 140194,
+      "medianIncome": 60670
+    },
+    "34980": {
+      "cbsa": "34980",
+      "name": "Nashville-Davidson--Murfreesboro--Franklin",
+      "population": 1990873,
+      "medianIncome": 79020
+    },
+    "35100": {
+      "cbsa": "35100",
+      "name": "New Bern",
+      "population": 122678,
+      "medianIncome": 60258
+    },
+    "35300": {
+      "cbsa": "35300",
+      "name": "New Haven-Milford",
+      "population": 866377,
+      "medianIncome": 81544
+    },
+    "35380": {
+      "cbsa": "35380",
+      "name": "New Orleans-Metairie",
+      "population": 1264357,
+      "medianIncome": 62748
+    },
+    "37460": {
+      "cbsa": "37460",
+      "name": "Panama City",
+      "population": 181055,
+      "medianIncome": 65999
+    },
+    "37620": {
+      "cbsa": "37620",
+      "name": "Parkersburg-Vienna",
+      "population": 89474,
+      "medianIncome": 54175
+    },
+    "37900": {
+      "cbsa": "37900",
+      "name": "Peoria",
+      "population": 401702,
+      "medianIncome": 67718
+    },
+    "38300": {
+      "cbsa": "38300",
+      "name": "Pittsburgh",
+      "population": 2365501,
+      "medianIncome": 71283
+    },
+    "38900": {
+      "cbsa": "38900",
+      "name": "Portland-Vancouver-Hillsboro",
+      "population": 2505312,
+      "medianIncome": 90451
+    },
+    "39300": {
+      "cbsa": "39300",
+      "name": "Providence-Warwick",
+      "population": 1670949,
+      "medianIncome": 81136
+    },
+    "39460": {
+      "cbsa": "39460",
+      "name": "Punta Gorda",
+      "population": 189900,
+      "medianIncome": 62164
+    },
+    "39580": {
+      "cbsa": "39580",
+      "name": "Raleigh-Cary",
+      "population": 1420825,
+      "medianIncome": 91818
+    },
+    "39740": {
+      "cbsa": "39740",
+      "name": "Reading",
+      "population": 428483,
+      "medianIncome": 74617
+    },
+    "40140": {
+      "cbsa": "40140",
+      "name": "Riverside-San Bernardino-Ontario",
+      "population": 4610050,
+      "medianIncome": 81041
+    },
+    "40660": {
+      "cbsa": "40660",
+      "name": "Rome",
+      "population": 98541,
+      "medianIncome": 57868
+    },
+    "41060": {
+      "cbsa": "41060",
+      "name": "St. Cloud",
+      "population": 199922,
+      "medianIncome": 72564
+    },
+    "41100": {
+      "cbsa": "41100",
+      "name": "St. George",
+      "population": 183297,
+      "medianIncome": 71976
+    },
+    "41740": {
+      "cbsa": "41740",
+      "name": "San Diego-Chula Vista-Carlsbad",
+      "population": 3289701,
+      "medianIncome": 96974
+    },
+    "41940": {
+      "cbsa": "41940",
+      "name": "San Jose-Sunnyvale-Santa Clara",
+      "population": 1981584,
+      "medianIncome": 151713
+    },
+    "42020": {
+      "cbsa": "42020",
+      "name": "San Luis Obispo-Paso Robles",
+      "population": 281712,
+      "medianIncome": 90158
+    },
+    "42140": {
+      "cbsa": "42140",
+      "name": "Santa Fe",
+      "population": 154481,
+      "medianIncome": 70522
+    },
+    "42220": {
+      "cbsa": "42220",
+      "name": "Santa Rosa-Petaluma",
+      "population": 488436,
+      "medianIncome": 99266
+    },
+    "42340": {
+      "cbsa": "42340",
+      "name": "Savannah",
+      "population": 406575,
+      "medianIncome": 70705
+    },
+    "44060": {
+      "cbsa": "44060",
+      "name": "Spokane-Spokane Valley",
+      "population": 585485,
+      "medianIncome": 69752
+    },
+    "44100": {
+      "cbsa": "44100",
+      "name": "Springfield",
+      "population": 208406,
+      "medianIncome": 72445
+    },
+    "44220": {
+      "cbsa": "44220",
+      "name": "Springfield",
+      "population": 135877,
+      "medianIncome": 58954
+    },
+    "45300": {
+      "cbsa": "45300",
+      "name": "Tampa-St. Petersburg-Clearwater",
+      "population": 3194310,
+      "medianIncome": 67197
+    },
+    "46060": {
+      "cbsa": "46060",
+      "name": "Tucson",
+      "population": 1042393,
+      "medianIncome": 64323
+    },
+    "46140": {
+      "cbsa": "46140",
+      "name": "Tulsa",
+      "population": 1017724,
+      "medianIncome": 65784
+    },
+    "46300": {
+      "cbsa": "46300",
+      "name": "Twin Falls",
+      "population": 115066,
+      "medianIncome": 62912
+    },
+    "48260": {
+      "cbsa": "48260",
+      "name": "Weirton-Steubenville",
+      "population": 116536,
+      "medianIncome": 54142
+    },
+    "48660": {
+      "cbsa": "48660",
+      "name": "Wichita Falls",
+      "population": 148523,
+      "medianIncome": 60641
+    },
+    "49340": {
+      "cbsa": "49340",
+      "name": "Worcester",
+      "population": 975551,
+      "medianIncome": 86708
+    },
+    "49660": {
+      "cbsa": "49660",
+      "name": "Youngstown-Warren-Boardman",
+      "population": 540328,
+      "medianIncome": 54650
+    }
+  }
+}
