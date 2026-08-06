@@ -1,0 +1,21 @@
+---
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+const words = label.trim().split(/\s+/);
+const stacked = words.length > 1;
+---
+
+{
+  stacked ? (
+    <span class="dir-th-label-stacked" aria-label={label}>
+      {words.map((word) => (
+        <span class="dir-th-label-stacked__word">{word}</span>
+      ))}
+    </span>
+  ) : (
+    <span class="dir-th-label">{label}</span>
+  )
+}

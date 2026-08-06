@@ -1,0 +1,53 @@
+---
+import type { SystemRollup } from '@/lib/system-rollups';
+import { buildRollupMetricCards } from '@/lib/rollup-insights';
+import { TONE_SURFACE } from '@/lib/visual-indicators';
+
+interface Props {
+  rollup: SystemRollup;
+  peerLabel?: string;
+  compact?: boolean;
+}
+
+const { rollup, peerLabel = 'national TEAM median', compact = false } = Astro.props;
+const cards = buildRollupMetricCards(rollup, peerLabel);
+---
+
+<div class:list={[!compact && 'mb-2']}>
+  <dl
+    class:list={[
+      'grid gap-0.5',
+      compact ? 'grid-cols-2' : 'grid-cols-4 sm:grid-cols-8',
+    ]}
+  >
+    {
+      cards.map((card) => (
+        <div
+          class:list={[TONE_SURFACE[card.tone], 'metric-tip-target rounded-md border px-1.5 py-1']}
+          data-metric-tip
+          tabindex="0"
+          data-explainer-title={card.explainerTitle}
+          data-explainer-body={card.explainerBody}
+          data-takeaway={card.takeaway}
+        >
+          <dt class="text-[0.55rem] font-bold tracking-wide uppercase leading-tight opacity-85">
+            {card.label}
+          </dt>
+          <dd class="text-xs font-bold tabular-nums leading-tight">{card.value}</dd>
+          {
+            card.barPercent != null && (
+              <div
+                class="ind-bar-track mt-0.5"
+                role="presentation"
+                aria-hidden="true"
+              >
+                <div class="ind-bar-fill" style={`width: ${card.barPercent}%`} />
+              </div>
+            )
+          }
+          {card.sub && <dd class="mt-0.5 text-[0.55rem] leading-tight opacity-80">{card.sub}</dd>}
+        </div>
+      ))
+    }
+  </dl>
+</div>

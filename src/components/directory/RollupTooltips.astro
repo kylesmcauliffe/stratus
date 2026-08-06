@@ -1,0 +1,85 @@
+---
+/** Delayed tooltips for rollup metric tiles (shared with profile metrics pattern). */
+---
+
+<div
+  id="rollup-metric-tip"
+  class="profile-metric-tip pointer-events-none hidden"
+  role="tooltip"
+  aria-hidden="true"
+>
+  <p id="rollup-metric-tip-title" class="profile-metric-tip__title"></p>
+  <p id="rollup-metric-tip-body" class="profile-metric-tip__body"></p>
+  <p id="rollup-metric-tip-takeaway" class="profile-metric-tip__takeaway"></p>
+</div>
+
+<script>
+  const HOVER_MS = 200;
+  const FOCUS_MS = 0;
+  const tip = document.getElementById('rollup-metric-tip');
+  const tipTitle = document.getElementById('rollup-metric-tip-title');
+  const tipBody = document.getElementById('rollup-metric-tip-body');
+  const tipTakeaway = document.getElementById('rollup-metric-tip-takeaway');
+
+  let timer = null;
+  let active = null;
+
+  const hide = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    active = null;
+    tip?.classList.add('hidden');
+    tip?.setAttribute('aria-hidden', 'true');
+  };
+
+  const position = (el) => {
+    if (!tip) return;
+    const rect = el.getBoundingClientRect();
+    const tipRect = tip.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - tipRect.width / 2;
+    let top = rect.bottom + 8;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+    if (top + tipRect.height > window.innerHeight - 8) {
+      top = rect.top - tipRect.height - 8;
+    }
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+  };
+
+  const show = (el) => {
+    if (!tip || !tipTitle || !tipBody || !tipTakeaway) return;
+    tipTitle.textContent = el.dataset.explainerTitle ?? '';
+    tipBody.textContent = el.dataset.explainerBody ?? '';
+    tipTakeaway.textContent = el.dataset.takeaway ?? '';
+    tip.classList.remove('hidden');
+    tip.setAttribute('aria-hidden', 'false');
+    position(el);
+  };
+
+  document.querySelectorAll('[data-rollup-tip]').forEach((el) => {
+    el.addEventListener('mouseenter', () => {
+      hide();
+      active = el;
+      timer = setTimeout(() => {
+        if (active === el) show(el);
+      }, HOVER_MS);
+    });
+    el.addEventListener('focus', () => {
+      hide();
+      active = el;
+      timer = setTimeout(() => {
+        if (active === el) show(el);
+      }, FOCUS_MS);
+    });
+    el.addEventListener('mouseleave', hide);
+    el.addEventListener('blur', hide);
+  });
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (active && tip && !tip.classList.contains('hidden')) position(active);
+    },
+    { passive: true },
+  );
+</script>
