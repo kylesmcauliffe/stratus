@@ -1,0 +1,181 @@
+---
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import type { HospitalPublicProfile } from '@/data/hospital-public-profile';
+import { careCompareSearchUrl, CMS_HOSPITAL_GENERAL_DATASET_URL } from '@/lib/cms-links';
+import {
+  regionProfilePathFromName,
+  stateProfilePath,
+  systemProfilePathFromName,
+} from '@/lib/directory-links';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+  publicProfile?: HospitalPublicProfile | null;
+  variant?: 'hero' | 'panel';
+  /** Hero: omit CMS roster name (already in page title) */
+  hideRoster?: boolean;
+}
+
+const { hospital, record, publicProfile, variant = 'panel', hideRoster = false } = Astro.props;
+const g = publicProfile?.general;
+const systemHref = hospital.healthSystem ? systemProfilePathFromName(hospital.healthSystem) : null;
+const stateProfileHref = stateProfilePath(hospital.state);
+const isHero = variant === 'hero';
+---
+
+<div
+  class:list={[
+    'profile-facility-facts',
+    isHero && 'profile-facility-facts--hero',
+    isHero && hideRoster && 'profile-facility-facts--hero-inline',
+    isHero && !hideRoster
+      ? 'mt-2 rounded-md border border-white/25 bg-white/10 px-2 py-1.5 text-[0.65rem] text-white/90'
+      : !isHero && 'border-brand-gray-200 rounded-md border bg-white px-2 py-1.5 text-[0.65rem]',
+    isHero && hideRoster && 'mt-1.5 text-[0.65rem] text-white/90',
+  ]}
+>
+  {
+    !hideRoster && (
+      <div class="profile-facility-facts__roster">
+        <p
+          class:list={[
+            'font-semibold',
+            isHero ? 'text-white/60' : 'text-brand-gray-600',
+          ]}
+        >
+          CMS roster name
+        </p>
+        <p
+          class:list={[
+            'mt-0.5 font-medium leading-snug',
+            isHero ? 'text-white' : 'text-brand-gray-900',
+          ]}
+        >
+          {hospital.name}
+        </p>
+      </div>
+    )
+  }
+  <dl
+    class:list={[
+      'profile-facts-grid',
+      !hideRoster && 'profile-facts-grid--under-roster',
+      hideRoster && isHero && 'profile-facts-grid--hero-inline',
+    ]}
+  >
+    <dt class:list={[isHero ? 'text-white/60' : 'text-brand-gray-600', 'font-semibold']}>
+      Location
+    </dt>
+    <dd class:list={[isHero ? 'text-white/95' : 'text-brand-gray-900']}>
+      {
+        g ? (
+          <>
+            {g.city},{' '}
+            <a href={stateProfileHref} class="dir-entity-link hover:underline">
+              {g.state}
+            </a>
+            {' '}
+            · {g.county} County
+          </>
+        ) : hospital.city ? (
+          <>
+            {hospital.city},{' '}
+            <a href={stateProfileHref} class="dir-entity-link hover:underline">
+              {hospital.state}
+            </a>
+          </>
+        ) : (
+          <a href={stateProfileHref} class="dir-entity-link hover:underline">
+            {hospital.state}
+          </a>
+        )
+      }
+    </dd>
+    <dt class:list={[isHero ? 'text-white/60' : 'text-brand-gray-600', 'font-semibold']}>TEAM</dt>
+    <dd class:list={[isHero ? 'text-white/95' : 'text-brand-gray-900']}>
+      {hospital.participation === 'Voluntary' ? 'Voluntary' : 'Mandatory'}
+      {
+        record?.region && (
+          <>
+            {' '}
+            ·{' '}
+            <a
+              href={regionProfilePathFromName(record.region)}
+              class="dir-entity-link hover:underline"
+            >
+              {record.region}
+            </a>
+          </>
+        )
+      }
+    </dd>
+    {
+      record?.teamRankByCjr != null && (
+        <>
+          <dt class:list={[isHero ? 'text-white/60' : 'text-brand-gray-600', 'font-semibold']}>
+            CJR rank
+          </dt>
+          <dd
+            class:list={[
+              'font-bold tabular-nums',
+              isHero ? 'text-white' : 'text-brand-gray-900',
+            ]}
+          >
+            #{record.teamRankByCjr}
+            {record.cjrTop50 ? ' · top-50' : ''}
+          </dd>
+        </>
+      )
+    }
+    <dt class:list={[isHero ? 'text-white/60' : 'text-brand-gray-600', 'font-semibold']}>
+      Health system
+    </dt>
+    <dd class:list={[isHero ? 'text-white/95' : 'text-brand-gray-900']}>
+      {
+        hospital.healthSystem && systemHref ? (
+          <a href={systemHref} class="dir-entity-link hover:underline">
+            {hospital.healthSystem}
+          </a>
+        ) : (
+          (hospital.healthSystem ?? '—')
+        )
+      }
+    </dd>
+    {
+      hospital.ccn && (
+        <>
+          <dt class:list={[isHero ? 'text-white/60' : 'text-brand-gray-600', 'font-semibold']}>
+            Sources
+          </dt>
+          <dd>
+            <a
+              href={careCompareSearchUrl(hospital.ccn)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class:list={[
+                'hover:underline',
+                isHero ? 'text-brand-sky font-semibold' : 'text-brand-blue',
+              ]}
+            >
+              Care Compare
+            </a>
+            <span class:list={[isHero ? 'text-white/40' : 'text-brand-gray-400']}> · </span>
+            <a
+              href={CMS_HOSPITAL_GENERAL_DATASET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              class:list={[
+                'hover:underline',
+                isHero ? 'text-brand-sky font-semibold' : 'text-brand-blue',
+              ]}
+            >
+              CMS dataset
+            </a>
+          </dd>
+        </>
+      )
+    }
+  </dl>
+</div>
