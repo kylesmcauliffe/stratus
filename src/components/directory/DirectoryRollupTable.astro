@@ -1,0 +1,220 @@
+---
+import RollupThLabel from '@/components/directory/RollupThLabel.astro';
+import { rollupMetricTones } from '@/lib/rollup-table-tones';
+import { TONE_SURFACE } from '@/lib/visual-indicators';
+
+export interface RollupTableRow {
+  name: string;
+  href: string;
+  count: number;
+  medianCjr: number | null;
+  pctOutreach: number;
+  medianStars: number | null;
+  medianBeds: number | null;
+  totalBeds: number;
+  medianMspb: number | null;
+  cjrTop50: number;
+  pctPipeline: number;
+}
+
+interface Props {
+  nameColumn: string;
+  rows: RollupTableRow[];
+  defaultSortKey?: string;
+  defaultSortDir?: 'asc' | 'desc';
+  /** Compact inner scroll (~8 rows) with sticky header — use for long state lists. */
+  compactScroll?: boolean;
+}
+
+const { nameColumn, rows, defaultSortKey = 'count', defaultSortDir = 'desc', compactScroll = false } =
+  Astro.props;
+
+const toneCell = (key: string, tones: ReturnType<typeof rollupMetricTones>, extra = '') => {
+  const tone = tones[key] ?? 'neutral';
+  return `${TONE_SURFACE[tone]} border-brand-gray-200 border px-1 py-0.5 tabular-nums whitespace-nowrap ${extra}`.trim();
+};
+---
+
+<div
+  class:list={[
+    compactScroll
+      ? 'hospital-results-panel dir-rollup-scroll min-h-0 w-full overflow-auto rounded-md border border-brand-gray-200 bg-white'
+      : 'dir-rollup-table-wrap overflow-x-auto',
+  ]}
+>
+  <table
+    class:list={[
+      'dir-table dir-rollup-table dir-rollup-table--toned text-left text-xs',
+      compactScroll && 'dir-rollup-table--scroll',
+    ]}
+    data-sortable
+    data-sort-default={defaultSortKey}
+    data-sort-default-dir={defaultSortDir}
+  >
+    <thead>
+      <tr class="text-[0.65rem]">
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="name"
+          data-sort-type="text"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          <RollupThLabel label={nameColumn} />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="count"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          <RollupThLabel label="Hospitals" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="median-cjr"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          title="Lower rank = better vs national median"
+        >
+          <RollupThLabel label="Median CJR" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="cjr-top50"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          title="Share in top 50 vs national"
+        >
+          <RollupThLabel label="CJR top 50" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="outreach"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          title="Higher % outreach yes vs national"
+        >
+          <RollupThLabel label="% outreach" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="pipeline"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          <RollupThLabel label="% pipeline" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="stars"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          <RollupThLabel label="Med ★" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="median-beds"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          <RollupThLabel label="Med beds" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="total-beds"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          <RollupThLabel label="Total beds" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-1 py-1 font-semibold"
+          data-sort-key="mspb"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          title="Lower MSPB = better vs national median"
+        >
+          <RollupThLabel label="Med MSPB" />
+          <span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => {
+          const tones = rollupMetricTones(r);
+          return (
+            <tr
+              class="hover:bg-brand-sky/15"
+              data-sort-name={r.name.toLowerCase()}
+              data-sort-count={r.count}
+              data-sort-median-cjr={r.medianCjr ?? ''}
+              data-sort-cjr-top50={r.cjrTop50}
+              data-sort-outreach={r.pctOutreach}
+              data-sort-pipeline={r.pctPipeline}
+              data-sort-stars={r.medianStars ?? ''}
+              data-sort-median-beds={r.medianBeds ?? ''}
+              data-sort-total-beds={r.totalBeds}
+              data-sort-mspb={r.medianMspb ?? ''}
+            >
+              <td class="dir-rollup-table__name border-brand-gray-200 border px-1 py-0.5">
+                <a
+                  href={r.href}
+                  class="text-brand-blue block max-w-[11rem] truncate font-semibold hover:underline"
+                  title={r.name}
+                >
+                  {r.name}
+                </a>
+              </td>
+              <td class={toneCell('count', tones)}>{r.count}</td>
+              <td class={toneCell('median-cjr', tones)}>
+                {r.medianCjr != null ? `#${Math.round(r.medianCjr)}` : '—'}
+              </td>
+              <td class={toneCell('cjr-top50', tones)}>{r.cjrTop50}</td>
+              <td class={toneCell('outreach', tones)}>{r.pctOutreach}%</td>
+              <td class={toneCell('pipeline', tones)}>{r.pctPipeline}%</td>
+              <td class={toneCell('stars', tones)}>{r.medianStars ?? '—'}</td>
+              <td class={toneCell('median-beds', tones)}>
+                {r.medianBeds != null ? r.medianBeds.toLocaleString('en-US') : '—'}
+              </td>
+              <td class={toneCell('total-beds', tones)}>{r.totalBeds.toLocaleString('en-US')}</td>
+              <td class={toneCell('mspb', tones)}>
+                {r.medianMspb != null ? r.medianMspb.toFixed(2) : '—'}
+              </td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>
