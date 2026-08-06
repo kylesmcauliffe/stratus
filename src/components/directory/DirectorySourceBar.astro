@@ -1,0 +1,30 @@
+---
+interface Props {
+  hospitalCount: number;
+  stateCount: number;
+}
+
+const { hospitalCount, stateCount } = Astro.props;
+const cmsUrl = 'https://www.cms.gov/priorities/innovation/innovation-models/team-model';
+---
+
+<aside
+  class="border-brand-gray-200 bg-brand-gray-50 text-brand-gray-600 border-t py-3 text-center text-xs leading-relaxed"
+  aria-label="Data source"
+>
+  <div class="site-container px-4">
+    <p>
+      {hospitalCount} CMS TEAM mandated hospitals across {stateCount} states/territories (2026–2030).
+      Curated snapshot from CMS participant list (not live-fetched).{' '}
+      <a
+        href={cmsUrl}
+        class="text-brand-blue font-medium hover:underline"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Official CMS source
+      </a>
+      · Rainfall internal use only
+    </p>
+  </div>
+</aside>

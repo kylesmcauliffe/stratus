@@ -1,0 +1,23 @@
+---
+import DirectoryLayout from '@/layouts/DirectoryLayout.astro';
+import GeographyExplore from '@/components/directory/GeographyExplore.astro';
+import { directoryStates } from '@/lib/state-rollups';
+
+const stateCount = directoryStates().length;
+const title = 'States — TEAM hospitals';
+const description = `Explore ${stateCount} states and territories, regions, health systems, and an interactive map on the CMS TEAM roster.`;
+---
+
+<DirectoryLayout title={title} description={description}>
+  <div class="site-container py-1.5 md:py-2">
+    <nav class="text-brand-gray-600 mb-1 text-xs">
+      <a href="/" class="text-brand-blue hover:underline">Directory</a>
+      <span aria-hidden="true"> / </span>
+      <span>States</span>
+    </nav>
+
+    <h1 class="text-brand-blue mb-2 text-xl font-bold tracking-tight md:text-2xl">States</h1>
+
+    <GeographyExplore />
+  </div>
+</DirectoryLayout>

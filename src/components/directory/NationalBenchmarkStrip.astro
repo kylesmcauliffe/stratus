@@ -1,0 +1,49 @@
+---
+import { researchBenchmarks } from '@/lib/research-benchmarks';
+
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+const b = researchBenchmarks;
+const items = [
+  { short: 'Stars', value: b.medianStars != null ? String(b.medianStars) : '—' },
+  { short: 'MSPB', value: b.medianMspb != null ? b.medianMspb.toFixed(2) : '—' },
+  { short: 'HVBP', value: b.medianHvbpTps != null ? String(Math.round(b.medianHvbpTps)) : '—' },
+  { short: 'CJR', value: b.medianTeamRankCjr != null ? `#${Math.round(b.medianTeamRankCjr)}` : '—' },
+  { short: 'Outreach', value: `${b.pctOutreachYes}%` },
+  { short: 'HACRP', value: `${b.pctHacrpPenalty}%` },
+];
+---
+
+{
+  compact ? (
+    <div
+      class="text-brand-gray-700 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs tabular-nums"
+      aria-label="National TEAM benchmarks"
+    >
+      <span class="text-brand-gray-500 font-semibold uppercase">National</span>
+      {items.map((item) => (
+        <span>
+          <span class="text-brand-gray-500">{item.short}</span>{' '}
+          <span class="text-brand-gray-900 font-bold">{item.value}</span>
+        </span>
+      ))}
+    </div>
+  ) : (
+    <div
+      class="border-brand-gray-200 bg-brand-gray-50/80 mb-4 rounded-card border px-3 py-2"
+      aria-label="National TEAM benchmarks"
+    >
+      <dl class="grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
+        {items.map((item) => (
+          <div>
+            <dt class="text-brand-gray-600 text-[0.625rem] font-semibold uppercase">{item.short}</dt>
+            <dd class="text-brand-gray-900 text-sm font-bold tabular-nums">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}

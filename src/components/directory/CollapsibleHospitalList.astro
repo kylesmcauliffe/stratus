@@ -1,0 +1,33 @@
+---
+interface Props {
+  count: number;
+  label?: string;
+  /** Start expanded (default true). */
+  open?: boolean;
+  id?: string;
+}
+
+const {
+  count,
+  label = 'Hospital list',
+  open = true,
+  id = 'rollup-hospital-list',
+} = Astro.props;
+---
+
+<details id={id} class="hospital-list-panel mt-2 group" open={open}>
+  <summary
+    class="text-brand-blue mb-1 cursor-pointer list-none text-xs font-bold [&::-webkit-details-marker]:hidden"
+  >
+    <span class="inline-flex items-center gap-1">
+      <span aria-hidden="true" class="group-open:rotate-90 inline-block transition-transform"
+        >▸</span
+      >
+      {label}
+      <span class="text-brand-gray-500 font-normal tabular-nums">({count})</span>
+    </span>
+  </summary>
+  <div class="min-w-0">
+    <slot />
+  </div>
+</details>

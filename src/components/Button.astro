@@ -1,0 +1,44 @@
+---
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'accent' | 'outline' | 'nav-cta' | 'white-outline' | 'text';
+  size?: 'sm' | 'md' | 'lg';
+  external?: boolean;
+  class?: string;
+}
+
+const { href, variant = 'primary', size = 'md', external = false, class: className } = Astro.props;
+
+const baseClasses =
+  'inline-flex items-center justify-center whitespace-nowrap transition-all duration-200 cursor-pointer rounded-button';
+
+const variantClasses = {
+  primary:
+    'bg-brand-blue text-white hover:bg-brand-blue-dark font-semibold shadow-sm hover:shadow-md',
+  accent:
+    'bg-brand-orange text-black hover:bg-brand-orange-dark font-semibold shadow-sm hover:shadow-md',
+  outline:
+    'border border-brand-ink text-brand-ink hover:border-brand-blue hover:bg-brand-blue hover:text-white font-medium',
+  'nav-cta':
+    'border border-brand-ink text-brand-ink hover:border-brand-blue hover:bg-brand-blue hover:text-white font-normal',
+  'white-outline':
+    'border-2 border-white text-white hover:bg-white hover:text-brand-blue font-semibold',
+  text: 'text-brand-blue hover:text-brand-blue-dark font-medium underline-offset-4 hover:underline',
+};
+
+const sizeClasses = {
+  sm: 'px-[15px] py-[9px] text-sm leading-5 min-h-10',
+  md: 'px-6 py-3 text-base font-semibold',
+  lg: 'px-8 py-4 text-lg font-semibold',
+};
+
+const classes = [baseClasses, variantClasses[variant], sizeClasses[size], className]
+  .filter(Boolean)
+  .join(' ');
+const Tag = href ? 'a' : 'button';
+const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+
+<Tag href={href} class={classes} {...externalAttrs}>
+  <slot />
+</Tag>

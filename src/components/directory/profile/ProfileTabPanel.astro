@@ -1,0 +1,19 @@
+---
+interface Props {
+  id: string;
+  hidden?: boolean;
+}
+
+const { id, hidden = true } = Astro.props;
+---
+
+<div
+  id={`profile-panel-${id}`}
+  role="tabpanel"
+  aria-labelledby={`profile-tab-${id}`}
+  data-profile-panel={id}
+  class:list={['profile-tab-panel space-y-6', hidden && 'hidden']}
+  hidden={hidden}
+>
+  <slot />
+</div>

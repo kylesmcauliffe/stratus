@@ -1,0 +1,43 @@
+---
+import type { PipelineBreakdown } from '@/lib/system-rollups';
+
+interface Props {
+  title: string;
+  rows: PipelineBreakdown[];
+  id: string;
+}
+
+const { title, rows, id } = Astro.props;
+const total = rows.reduce((s, r) => s + r.count, 0) || 1;
+---
+
+{
+  rows.length > 0 && (
+    <div class="min-w-0" data-mix-chart={id}>
+      <h3 class="text-brand-gray-800 mb-1 text-xs font-bold">{title}</h3>
+      <ul class="space-y-1">
+        {rows.map((row) => {
+          const pctOfTotal = Math.round((row.count / total) * 100);
+          return (
+            <li class="group">
+              <div class="flex items-center justify-between gap-2 text-[0.65rem]">
+                <span class="text-brand-gray-700 truncate font-medium">{row.label}</span>
+                <span class="text-brand-gray-900 shrink-0 font-bold tabular-nums">
+                  {row.count}
+                  <span class="text-brand-gray-500 font-normal"> ({pctOfTotal}%)</span>
+                </span>
+              </div>
+              <div class="ind-bar-track mt-0.5 h-1.5" aria-hidden="true">
+                <div
+                  class="ind-bar-fill ind-bar-fill--mix h-full"
+                  style={`width: ${pctOfTotal}%`}
+                  title={`${pctOfTotal}% of group`}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  )
+}

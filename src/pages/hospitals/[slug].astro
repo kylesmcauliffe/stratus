@@ -1,0 +1,39 @@
+---
+import DirectoryLayout from '@/layouts/DirectoryLayout.astro';
+import ProfileHero from '@/components/directory/profile/ProfileHero.astro';
+import { getDirectoryHospital } from '@/lib/directory-index';
+import ProfileBrief from '@/components/directory/profile/ProfileBrief.astro';
+import type { TeamHospital } from '@/data/team-hospitals';
+import { teamHospitals } from '@/data/team-hospitals';
+import { hospitalDisplayName } from '@/lib/team-hospital-links';
+import { teamHospitalProfile } from '@/lib/structured-data';
+
+export function getStaticPaths() {
+  return teamHospitals.map((hospital) => ({
+    params: { slug: hospital.slug },
+    props: { hospital },
+  }));
+}
+
+interface Props {
+  hospital: TeamHospital;
+}
+
+const { hospital } = Astro.props;
+const directoryRecord = getDirectoryHospital(hospital.slug);
+const displayName = hospitalDisplayName(hospital.name);
+const locationLabel = hospital.city ? `${hospital.city}, ${hospital.state}` : hospital.state;
+const title = displayName;
+const description = `${displayName} (${locationLabel}) — CMS TEAM mandated hospital.`;
+const ogImage = '/og/hospitals/profile.png';
+---
+
+<DirectoryLayout
+  title={title}
+  description={description}
+  jsonLd={teamHospitalProfile(hospital)}
+  ogImage={ogImage}
+>
+  <ProfileHero hospital={hospital} record={directoryRecord} />
+  <ProfileBrief hospital={hospital} />
+</DirectoryLayout>

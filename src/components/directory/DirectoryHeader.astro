@@ -1,0 +1,26 @@
+---
+const nav = [
+  { label: 'Search', href: '/#search' },
+  { label: 'States', href: '/states' },
+  { label: 'Compare', href: '/compare' },
+];
+---
+
+<header
+  class="border-brand-gray-200 sticky top-0 z-50 border-b bg-white/95 backdrop-blur-sm"
+>
+  <div class="site-container flex min-h-11 items-center justify-between gap-3 py-2">
+    <a href="/" class="text-brand-blue text-base font-bold tracking-tight">
+      Hospital Directory
+    </a>
+    <nav class="flex items-center gap-3 text-xs font-semibold sm:gap-4 sm:text-sm" aria-label="Directory sections">
+      {
+        nav.map((item) => (
+          <a href={item.href} class="text-brand-blue hover:underline">
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
