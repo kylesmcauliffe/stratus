@@ -1,0 +1,26 @@
+---
+import { stateProfilePath } from '@/lib/directory-links';
+
+interface Props {
+  states: string[];
+  class?: string;
+}
+
+const { states, class: className = '' } = Astro.props;
+const unique = [...new Set(states)].sort();
+---
+
+{
+  unique.length > 0 && (
+    <span class:list={[className]}>
+      {unique.map((st, i) => (
+        <>
+          {i > 0 && ', '}
+          <a href={stateProfilePath(st)} class="dir-entity-link font-semibold hover:underline">
+            {st}
+          </a>
+        </>
+      ))}
+    </span>
+  )
+}

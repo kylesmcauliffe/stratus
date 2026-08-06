@@ -1,0 +1,52 @@
+---
+import type { SystemRollup } from '@/lib/system-rollups';
+import { buildRollupVsNationalCards } from '@/lib/rollup-vs-national';
+import { TONE_SURFACE } from '@/lib/visual-indicators';
+
+interface Props {
+  groupLabel: string;
+  rollup: SystemRollup;
+}
+
+const { groupLabel, rollup } = Astro.props;
+const cards = buildRollupVsNationalCards(rollup);
+const headingId = `rollup-vs-national-${groupLabel.replace(/\s+/g, '-').toLowerCase()}`;
+---
+
+<section
+  class="border-brand-gray-200 mb-2 rounded-card border bg-brand-gray-50/80 px-2 py-2"
+  aria-labelledby={headingId}
+>
+  <h2 id={headingId} class="text-brand-blue mb-1.5 text-xs font-bold">
+    {groupLabel} vs national TEAM medians
+  </h2>
+  <dl class="grid grid-cols-2 gap-0.5 sm:grid-cols-4 lg:grid-cols-8">
+    {
+      cards.map((card) => (
+        <div
+          class:list={[TONE_SURFACE[card.tone], 'metric-tip-target rounded-md border px-1.5 py-1']}
+          data-metric-tip
+          tabindex="0"
+          data-explainer-title={card.explainerTitle}
+          data-explainer-body={card.explainerBody}
+          data-takeaway={card.takeaway}
+        >
+          <dt class="text-[0.55rem] font-bold tracking-wide uppercase leading-tight opacity-85">
+            {card.label}
+          </dt>
+          <dd class="text-xs font-bold tabular-nums leading-tight">{card.stateValue}</dd>
+          {
+            card.barPercent != null && (
+              <div class="ind-bar-track mt-0.5" aria-hidden="true">
+                <div class="ind-bar-fill" style={`width: ${card.barPercent}%`} />
+              </div>
+            )
+          }
+          <dd class="text-brand-gray-500 mt-0.5 text-[0.55rem] leading-tight">
+            Nat. {card.nationalValue}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>
