@@ -1,0 +1,130 @@
+---
+import GeographyCohortPanel from '@/components/directory/GeographyCohortPanel.astro';
+import DirectoryRollupTable from '@/components/directory/DirectoryRollupTable.astro';
+import GeographyRollupSection from '@/components/directory/GeographyRollupSection.astro';
+import { hospitalProfilePath } from '@/lib/hospital-slug';
+import { hospitalDisplayName } from '@/lib/team-hospital-links';
+import {
+  buildOwnershipExploreRows,
+  buildRegionExploreRows,
+  buildRuralUrbanExploreRows,
+  buildStateExploreRows,
+  buildSystemExploreRows,
+} from '@/lib/geography-explore';
+import { directoryHospitals } from '@/lib/directory-index';
+
+const stateRows = buildStateExploreRows();
+const regionRows = buildRegionExploreRows();
+const systemRows = buildSystemExploreRows();
+const ruralUrbanRows = buildRuralUrbanExploreRows();
+const ownershipRows = buildOwnershipExploreRows();
+const exampleHospital = directoryHospitals[0];
+---
+
+<div class="geography-explore space-y-2">
+  <GeographyCohortPanel />
+
+  <div class="geography-explore__rollups flex min-w-0 flex-col gap-2 scroll-mt-14" id="rollups">
+    <GeographyRollupSection
+      id="regions"
+      title="Regions"
+      description={`${regionRows.length} Master Tracker regions. Click a row for the region profile.`}
+      countLabel={`Sortable · ${regionRows.length}`}
+      open={true}
+    >
+      <DirectoryRollupTable nameColumn="Region" rows={regionRows} />
+    </GeographyRollupSection>
+
+    <GeographyRollupSection
+      id="systems"
+      title="Health systems"
+      description={`${systemRows.length} affiliated systems. Click a row for the system profile.`}
+      countLabel={`Sortable · ${systemRows.length}`}
+      open={true}
+    >
+      <DirectoryRollupTable nameColumn="System" rows={systemRows} />
+      {
+        exampleHospital && (
+          <p class="text-brand-gray-600 mt-2 text-[0.65rem]">
+            Example profile:{' '}
+            <a href={hospitalProfilePath(exampleHospital.slug)} class="text-brand-blue hover:underline">
+              {hospitalDisplayName(exampleHospital.name)}
+            </a>
+          </p>
+        )
+      }
+    </GeographyRollupSection>
+
+    <GeographyRollupSection
+      id="states"
+      title="States"
+      description={`${stateRows.length} jurisdictions. Click a state for its profile. Green / red / yellow vs national TEAM benchmarks.`}
+      countLabel={`Sortable · ${stateRows.length} · ~8 rows visible`}
+      open={false}
+    >
+      <DirectoryRollupTable nameColumn="State" rows={stateRows} defaultSortKey="count" compactScroll />
+    </GeographyRollupSection>
+
+    <GeographyRollupSection
+      id="rural-urban"
+      title="Rural / urban"
+      description={`${ruralUrbanRows.length} CMS rural/urban buckets. Click a row to filter the home roster.`}
+      countLabel={`Sortable · ${ruralUrbanRows.length}`}
+      open={false}
+    >
+      <DirectoryRollupTable nameColumn="Setting" rows={ruralUrbanRows} defaultSortKey="count" />
+    </GeographyRollupSection>
+
+    <GeographyRollupSection
+      id="ownership"
+      title="Ownership"
+      description={`${ownershipRows.length} ownership categories. Click a row to filter the home roster.`}
+      countLabel={`Sortable · ${ownershipRows.length}`}
+      open={false}
+    >
+      <DirectoryRollupTable nameColumn="Ownership" rows={ownershipRows} defaultSortKey="count" />
+    </GeographyRollupSection>
+  </div>
+</div>
+
+<script>
+  const SECTION_IDS = new Set([
+    'graphs',
+    'rollups',
+    'regions',
+    'systems',
+    'states',
+    'rural-urban',
+    'ownership',
+    'map',
+  ]);
+
+  function openGeographySection(rawId: string | null) {
+    if (!rawId || !SECTION_IDS.has(rawId)) return;
+    const id = rawId === 'map' ? 'graphs' : rawId;
+    if (id === 'graphs') {
+      const graphs = document.getElementById('graphs');
+      if (graphs instanceof HTMLDetailsElement) graphs.open = true;
+    }
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el instanceof HTMLDetailsElement) el.open = true;
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const url = new URL(window.location.href);
+      url.searchParams.delete('view');
+      url.hash = id;
+      history.replaceState(null, '', url);
+    });
+  }
+
+  /** Legacy `?view=` or `#section` → open + scroll. */
+  function initGeographySectionDeepLink() {
+    const legacy = new URLSearchParams(window.location.search).get('view');
+    const hashId = window.location.hash.replace(/^#/, '');
+    openGeographySection(legacy || hashId || null);
+  }
+
+  initGeographySectionDeepLink();
+  document.addEventListener('astro:page-load', initGeographySectionDeepLink);
+</script>
