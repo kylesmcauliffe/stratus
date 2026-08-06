@@ -1,0 +1,57 @@
+---
+interface Props {
+  label: string;
+  value: number | null;
+  /** Display scale maximum (bar width % = value/max). */
+  max?: number;
+  /** Reference line as % of max (e.g. 1.0 on excess readmission scale). */
+  benchmark?: number | null;
+  suffix?: string;
+  highlight?: 'good' | 'warn' | 'neutral';
+}
+
+const { label, value, max = 100, benchmark = null, suffix = '', highlight = 'neutral' } = Astro.props;
+
+const pct = value != null && max > 0 ? Math.min(100, (value / max) * 100) : 0;
+const benchPct = benchmark != null && max > 0 ? Math.min(100, (benchmark / max) * 100) : null;
+
+const fillClass = {
+  good: 'bg-brand-blue',
+  warn: 'bg-amber-500',
+  neutral: 'bg-brand-blue/70',
+}[highlight];
+
+function formatDisplay(v: number | null): string {
+  if (v == null) return '—';
+  if (suffix === ' pts') return v.toFixed(1);
+  if (max <= 2) return v.toFixed(3);
+  if (max <= 100) return String(Math.round(v));
+  return String(Math.round(v * 10) / 10);
+}
+
+const displayValue = formatDisplay(value);
+---
+
+<div class="metric-bar">
+  <div class="metric-bar__head flex justify-between gap-2 text-xs">
+    <span class="text-brand-gray-700 font-semibold">{label}</span>
+    <span class="text-brand-gray-900 font-bold tabular-nums">
+      {value != null ? `${displayValue}${suffix}` : '—'}
+    </span>
+  </div>
+  <div class="metric-bar__track bg-brand-gray-100 relative mt-1.5 h-2.5 overflow-hidden rounded-full">
+    {
+      benchPct != null && (
+        <span
+          class="bg-brand-gray-400 absolute top-0 bottom-0 z-10 w-0.5"
+          style={`left: ${benchPct}%`}
+          aria-hidden="true"
+        />
+      )
+    }
+    <span
+      class:list={['metric-bar__fill absolute top-0 left-0 h-full rounded-full transition-[width] duration-200', fillClass]}
+      style={`width: ${pct}%`}
+    />
+  </div>
+</div>

@@ -1,0 +1,53 @@
+---
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { getPublicProfile } from '@/data/hospital-public-profile';
+import {
+  buildProfileMetricTiles,
+  PROFILE_METRIC_TONE_CLASS,
+} from '@/lib/profile-metric-tiles';
+import { metricValueClass } from '@/lib/value-tone';
+import ProfileMetricTooltips from '@/components/directory/profile/ProfileMetricTooltips.astro';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+}
+
+const { hospital, record } = Astro.props;
+const { tiles } = buildProfileMetricTiles({
+  hospital,
+  record,
+  publicProfile: getPublicProfile(hospital),
+});
+---
+
+<div class="border-brand-gray-200 bg-brand-gray-50/80 border-b">
+  <div class="site-container py-2">
+    <p class="text-brand-gray-500 mb-1 text-[0.6rem]">Hover for context · green/amber vs state median</p>
+    <dl class="grid grid-cols-3 gap-1.5 sm:grid-cols-6 lg:gap-2">
+      {
+        tiles.map((tile) => (
+          <div
+            class:list={[PROFILE_METRIC_TONE_CLASS[tile.tone], 'rounded-md border px-2 py-1.5']}
+            data-metric-tile
+            tabindex="0"
+            data-explainer-title={tile.explainerTitle}
+            data-explainer-body={tile.explainerBody}
+            data-takeaway={tile.takeaway}
+          >
+            <dt class="text-[0.6rem] font-bold tracking-wide uppercase opacity-80">{tile.label}</dt>
+            <dd class:list={['text-sm font-bold leading-tight tabular-nums', metricValueClass(tile.value)]}>
+              {tile.value}
+            </dd>
+            {tile.sub && (
+              <dd class="mt-0.5 text-[0.6rem] leading-tight opacity-90">{tile.sub}</dd>
+            )}
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</div>
+
+<ProfileMetricTooltips />

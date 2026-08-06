@@ -1,0 +1,59 @@
+---
+import type { SystemRollup } from '@/lib/system-rollups';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import RollupMetricStrip from '@/components/directory/RollupMetricStrip.astro';
+import RollupMixPanel from '@/components/directory/RollupMixPanel.astro';
+import StateBreakdownPanel from '@/components/directory/StateBreakdownPanel.astro';
+import MetricDistributionChart from '@/components/directory/MetricDistributionChart.astro';
+import {
+  cjrRankDistribution,
+  formatCjrMedian,
+  formatStarsMedian,
+  starsDistribution,
+} from '@/lib/metric-distribution';
+
+interface Props {
+  rollup: SystemRollup;
+  hospitals?: DirectoryHospital[];
+  peerLabel?: string;
+  regionSlug?: string;
+}
+
+const { rollup, hospitals = [], peerLabel, regionSlug } = Astro.props;
+
+const states = [...new Set(hospitals.map((h) => h.state))];
+const showStateBreakdown = states.length >= 2 && !regionSlug;
+const hasMix =
+  rollup.pipelineBreakdown.length > 0 || rollup.salesStageBreakdown.length > 0;
+const showDistributions = hospitals.length >= 3;
+const cjrDist = showDistributions ? cjrRankDistribution(hospitals) : null;
+const starsDist = showDistributions ? starsDistribution(hospitals) : null;
+---
+
+<RollupMetricStrip rollup={rollup} peerLabel={peerLabel} />
+
+{
+  showDistributions && cjrDist && starsDist && (
+    <div class="mb-2 grid gap-2 sm:grid-cols-2">
+      <MetricDistributionChart distribution={cjrDist} medianLabel={formatCjrMedian(cjrDist.median)} />
+      <MetricDistributionChart
+        distribution={starsDist}
+        medianLabel={formatStarsMedian(starsDist.median)}
+      />
+    </div>
+  )
+}
+
+{
+  (showStateBreakdown || hasMix) && (
+    <div
+      class:list={[
+        'mb-2 grid gap-2',
+        showStateBreakdown && hasMix ? 'lg:grid-cols-[minmax(11rem,28%)_minmax(0,1fr)]' : 'grid-cols-1',
+      ]}
+    >
+      {showStateBreakdown && <StateBreakdownPanel hospitals={hospitals} regionSlug={regionSlug} />}
+      {hasMix && <RollupMixPanel rollup={rollup} />}
+    </div>
+  )
+}

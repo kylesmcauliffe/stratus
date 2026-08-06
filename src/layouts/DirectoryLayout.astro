@@ -1,0 +1,67 @@
+---
+import type { Thing, WithContext } from 'schema-dts';
+import '@/styles/global.css';
+import DirectoryHeader from '@/components/directory/DirectoryHeader.astro';
+import DirectorySourceBar from '@/components/directory/DirectorySourceBar.astro';
+import SortableTableInit from '@/components/directory/SortableTableInit.astro';
+import ResizePerf from '@/components/ResizePerf.astro';
+import DirectoryMetricTooltips from '@/components/directory/DirectoryMetricTooltips.astro';
+import SEO from '@/components/SEO.astro';
+import { siteConfig } from '@/data/site-config';
+import { teamHospitals } from '@/data/team-hospitals';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  jsonLd?: WithContext<Thing> | WithContext<Thing>[];
+  showSourceBar?: boolean;
+}
+
+const {
+  title,
+  description = siteConfig.description,
+  ogImage,
+  jsonLd,
+  showSourceBar = true,
+} = Astro.props;
+
+const stateCount = new Set(teamHospitals.map((h) => h.state)).size;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1E293B" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <SEO title={title} description={description} ogImage={ogImage} jsonLd={jsonLd} noindex={true} />
+  </head>
+  <body class="directory-app flex min-h-screen flex-col bg-white">
+    <a
+      href="#main-content"
+      class="focus:bg-brand-blue sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-md focus:px-4 focus:py-2 focus:text-white"
+    >
+      Skip to main content
+    </a>
+    <DirectoryHeader />
+    <main id="main-content" tabindex="-1" class="relative z-0 flex-1 scroll-mt-16">
+      <slot />
+    </main>
+    {showSourceBar && (
+      <DirectorySourceBar hospitalCount={teamHospitals.length} stateCount={stateCount} />
+    )}
+    <SortableTableInit />
+    <ResizePerf />
+    <DirectoryMetricTooltips />
+  </body>
+</html>

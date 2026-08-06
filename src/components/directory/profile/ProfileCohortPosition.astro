@@ -1,0 +1,49 @@
+---
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { directoryHospitals } from '@/lib/directory-index';
+import { cohortMarkersForHospital } from '@/lib/cohort-highlight';
+import {
+  cjrRankDistribution,
+  formatCjrMedian,
+  formatStarsMedian,
+  starsDistribution,
+} from '@/lib/metric-distribution';
+import MetricDistributionChart from '@/components/directory/MetricDistributionChart.astro';
+
+interface Props {
+  record?: DirectoryHospital;
+}
+
+const { record } = Astro.props;
+const cohort = directoryHospitals;
+const cjrDist = cjrRankDistribution(cohort);
+const starsDist = starsDistribution(cohort);
+const markers = cohortMarkersForHospital(record);
+---
+
+<section
+  class="border-brand-gray-200 rounded-md border bg-white px-2 py-2"
+  aria-labelledby="profile-cohort-heading"
+>
+  <h3 id="profile-cohort-heading" class="text-brand-blue text-xs font-bold">
+    Position in TEAM cohort
+    <span class="text-brand-gray-500 font-normal"> (n={cohort.length})</span>
+  </h3>
+  <p class="text-brand-gray-500 mb-2 text-[0.6rem]">
+    National mandated hospitals — highlighted bin is this facility.
+  </p>
+  <div class="grid gap-2 sm:grid-cols-2">
+    <MetricDistributionChart
+      distribution={cjrDist}
+      medianLabel={formatCjrMedian(cjrDist.median)}
+      highlightBin={markers.cjrBin ?? undefined}
+      markerNote={markers.cjrNote ?? undefined}
+    />
+    <MetricDistributionChart
+      distribution={starsDist}
+      medianLabel={formatStarsMedian(starsDist.median)}
+      highlightBin={markers.starsBin ?? undefined}
+      markerNote={record?.overallRating != null ? `This hospital · ${record.overallRating}★` : undefined}
+    />
+  </div>
+</section>

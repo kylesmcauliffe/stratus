@@ -1,0 +1,58 @@
+---
+import type { StateSummary } from '@/lib/directory-index';
+import { buildStateVsNationalCards } from '@/lib/state-vs-national';
+import { TONE_SURFACE } from '@/lib/visual-indicators';
+
+interface Props {
+  state: string;
+  summary: StateSummary;
+  /** Narrow column layout on state profile grid. */
+  compact?: boolean;
+}
+
+const { state, summary, compact = false } = Astro.props;
+const cards = buildStateVsNationalCards(summary);
+---
+
+<section
+  class="border-brand-gray-200 mb-2 rounded-card border bg-brand-gray-50/80 px-2 py-2"
+  aria-labelledby="state-vs-national-heading"
+>
+  <h2 id="state-vs-national-heading" class="text-brand-blue mb-1.5 text-xs font-bold">
+    {state} vs national TEAM medians
+  </h2>
+  <dl
+    class:list={[
+      'grid gap-0.5',
+      compact ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8',
+    ]}
+  >
+    {
+      cards.map((card) => (
+        <div
+          class:list={[TONE_SURFACE[card.tone], 'metric-tip-target rounded-md border px-1.5 py-1']}
+          data-metric-tip
+          tabindex="0"
+          data-explainer-title={card.explainerTitle}
+          data-explainer-body={card.explainerBody}
+          data-takeaway={card.takeaway}
+        >
+          <dt class="text-[0.55rem] font-bold tracking-wide uppercase leading-tight opacity-85">
+            {card.label}
+          </dt>
+          <dd class="text-xs font-bold tabular-nums leading-tight">{card.stateValue}</dd>
+          {
+            card.barPercent != null && (
+              <div class="ind-bar-track mt-0.5" aria-hidden="true">
+                <div class="ind-bar-fill" style={`width: ${card.barPercent}%`} />
+              </div>
+            )
+          }
+          <dd class="text-brand-gray-500 mt-0.5 text-[0.55rem] leading-tight">
+            Nat. {card.nationalValue}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>

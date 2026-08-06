@@ -1,0 +1,62 @@
+---
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { buildPeerChips, type PeerMetricKey } from '@/lib/peer-context-chips';
+import type { CompareTone } from '@/lib/research-benchmarks';
+
+interface Props {
+  record?: DirectoryHospital;
+  state: string;
+  metrics: PeerMetricKey[];
+  title?: string;
+  compact?: boolean;
+}
+
+const { record, state, metrics, title = 'Peer context', compact = false } = Astro.props;
+const chips = buildPeerChips(record, state, metrics);
+
+const toneClass: Record<CompareTone, string> = {
+  good: 'border-brand-blue/30 bg-brand-sky/50 text-brand-navy',
+  warn: 'border-amber-300/60 bg-amber-50 text-amber-900',
+  neutral: 'border-brand-gray-200 bg-brand-gray-50 text-brand-gray-800',
+};
+---
+
+{
+  chips.length > 0 && (
+    <div
+      class:list={[
+        'rounded-card border-brand-gray-200 border bg-white shadow-card',
+        compact ? 'mb-4 p-3' : 'p-4',
+      ]}
+    >
+      <h3 class="text-brand-gray-900 mb-1 text-sm font-bold">{title}</h3>
+      {!compact && (
+        <p class="text-brand-gray-500 mb-3 text-xs">
+          Compared to {state} and national TEAM cohort medians.
+        </p>
+      )}
+      <ul class:list={['flex flex-col gap-2', compact && 'sm:flex-row sm:flex-wrap']}>
+        {chips.map((chip) => (
+          <li
+            class:list={[
+              'rounded-button border px-3 py-2 text-xs',
+              toneClass[chip.tone],
+              compact && 'sm:max-w-xs',
+              'cursor-help',
+            ]}
+            data-metric-tile
+            tabindex="0"
+            data-explainer-title={chip.explainerTitle}
+            data-explainer-body={chip.explainerBody}
+            data-takeaway={chip.takeaway}
+          >
+            <span class="font-semibold">{chip.label}:</span> {chip.detail}
+          </li>
+        ))}
+      </ul>
+      {compact && (
+        <p class="text-brand-gray-500 mt-2 text-[0.65rem]">Hover a pill for metric context.</p>
+      )}
+    </div>
+  )
+}
