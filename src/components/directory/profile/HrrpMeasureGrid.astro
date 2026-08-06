@@ -1,0 +1,66 @@
+---
+import MetricBar from '@/components/directory/profile/MetricBar.astro';
+
+interface Measure {
+  measure: string;
+  excessReadmissionRatio: number;
+}
+
+interface Props {
+  measures: Measure[];
+  avgExcess?: number | null;
+  conditionsAbovePeers?: number | null;
+}
+
+const { measures, avgExcess, conditionsAbovePeers } = Astro.props;
+
+function shortMeasure(name: string): string {
+  return name
+    .replace(/Readmission Rate$/i, '')
+    .replace(/READM Rate$/i, '')
+    .trim();
+}
+
+const sorted = [...measures]
+  .filter((m) => m.excessReadmissionRatio != null)
+  .sort((a, b) => b.excessReadmissionRatio - a.excessReadmissionRatio);
+---
+
+{
+  sorted.length === 0 ? (
+    <p class="text-brand-gray-600 text-sm">No HRRP measures on file.</p>
+  ) : (
+    <div class="hrrp-measure-grid max-h-[22rem] overflow-y-auto pr-1">
+      <div class="grid gap-2 sm:grid-cols-2">
+        {
+          sorted.map((m) => (
+            <MetricBar
+              label={shortMeasure(m.measure)}
+              value={m.excessReadmissionRatio}
+              max={1.5}
+              benchmark={1}
+              highlight={m.excessReadmissionRatio > 1 ? 'warn' : 'good'}
+            />
+          ))
+        }
+      </div>
+      {
+        (avgExcess != null || conditionsAbovePeers != null) && (
+          <p class="text-brand-gray-600 border-brand-gray-100 mt-3 border-t pt-2 text-xs">
+            {avgExcess != null && (
+              <>
+                Avg excess: <strong>{avgExcess.toFixed(3)}</strong>
+              </>
+            )}
+            {conditionsAbovePeers != null && (
+              <>
+                {avgExcess != null && ' · '}
+                {conditionsAbovePeers} condition{conditionsAbovePeers === 1 ? '' : 's'} above peers
+              </>
+            )}
+          </p>
+        )
+      }
+    </div>
+  )
+}

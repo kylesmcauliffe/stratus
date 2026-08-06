@@ -1,0 +1,86 @@
+---
+import { METRIC_EXPLAINERS, metricTakeaway } from '@/lib/metric-explainers';
+
+interface Domain {
+  label: string;
+  value: number | null;
+  max: number;
+}
+
+interface Props {
+  totalScore: number | null;
+  fiscalYear?: string | number | null;
+  domains: Domain[];
+}
+
+const { totalScore, fiscalYear, domains } = Astro.props;
+const valid = domains.filter((d): d is Domain & { value: number } => d.value != null && d.value > 0);
+const totalPts = valid.reduce((s, d) => s + d.value, 0);
+const colors = ['#1e5a8a', '#2d7ab8', '#4a9fd4', '#7ec8e8'];
+
+const segments = valid.map((d, i) => {
+  const pct = totalPts > 0 ? (d.value / totalPts) * 100 : 0;
+  const explainer = METRIC_EXPLAINERS[d.label] ?? METRIC_EXPLAINERS['HVBP domains'];
+  return {
+    ...d,
+    pct,
+    color: colors[i % colors.length],
+    explainerTitle: explainer.title,
+    explainerBody: `${d.label}: ${d.value.toFixed(1)} of ${d.max} pts in this domain.`,
+    takeaway: metricTakeaway({ tone: 'neutral', label: d.label, peerDetail: `${d.value.toFixed(1)} pts` }),
+  };
+});
+---
+
+{
+  segments.length > 0 && (
+    <div class="hvbp-stacked mb-4">
+      <p class="text-brand-gray-700 mb-2 text-xs font-semibold">
+        HVBP domain mix
+        {totalScore != null && (
+          <span class="text-brand-gray-500 font-normal">
+            {' '}
+            · TPS {Math.round(totalScore)}
+            {fiscalYear != null && ` (FY ${fiscalYear})`}
+          </span>
+        )}
+      </p>
+      <div
+        class="flex h-6 overflow-hidden rounded-full border border-brand-gray-200"
+        role="img"
+        aria-label="HVBP domain score distribution"
+      >
+        {
+          segments.map((seg) => (
+            <div
+              class="hvbp-stacked__seg cursor-help transition-opacity hover:opacity-90"
+              style={`width: ${seg.pct}%; background-color: ${seg.color}`}
+              data-metric-tile
+              tabindex="0"
+              data-explainer-title={seg.explainerTitle}
+              data-explainer-body={seg.explainerBody}
+              data-takeaway={seg.takeaway}
+              title={`${seg.label}: ${seg.value.toFixed(1)} pts`}
+            />
+          ))
+        }
+      </div>
+      <ul class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[0.65rem]">
+        {
+          segments.map((seg) => (
+            <li class="flex items-center gap-1">
+              <span
+                class="size-2 shrink-0 rounded-sm"
+                style={`background-color: ${seg.color}`}
+                aria-hidden="true"
+              />
+              <span class="text-brand-gray-700">{seg.label}</span>
+              <span class="text-brand-gray-900 font-bold tabular-nums">{seg.value.toFixed(1)}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="text-brand-gray-500 mt-1 text-[0.65rem]">Hover segments for context.</p>
+    </div>
+  )
+}

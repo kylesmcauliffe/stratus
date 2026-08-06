@@ -1,0 +1,42 @@
+---
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { buildPeerChips } from '@/lib/peer-context-chips';
+import type { CompareTone } from '@/lib/research-benchmarks';
+
+interface Props {
+  record?: DirectoryHospital;
+  state: string;
+}
+
+const { record, state } = Astro.props;
+
+const chips = buildPeerChips(record, state, [
+  'cmsStars',
+  'mspb',
+  'hvbp',
+  'hcahps',
+  'hrrp',
+  'cjr',
+]);
+
+const toneClass: Record<CompareTone, string> = {
+  good: 'border-brand-blue/30 bg-brand-sky/50 text-brand-navy',
+  warn: 'border-amber-300/60 bg-amber-50 text-amber-900',
+  neutral: 'border-brand-gray-200 bg-brand-gray-50 text-brand-gray-800',
+};
+---
+
+{
+  chips.length > 0 && (
+    <div class="border-brand-gray-200 rounded-md border bg-white px-2 py-1">
+      <h3 class="text-brand-gray-900 mb-0.5 text-[0.65rem] font-bold">Peers · {state} &amp; US</h3>
+      <ul class="grid gap-0.5 sm:grid-cols-2 lg:grid-cols-3">
+        {chips.map((chip) => (
+          <li class:list={['rounded border px-2 py-1 text-[0.65rem] leading-snug', toneClass[chip.tone]]}>
+            <span class="font-semibold">{chip.label}:</span> {chip.detail}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
