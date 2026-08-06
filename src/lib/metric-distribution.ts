@@ -138,7 +138,7 @@ export function ruralUrbanDistribution(hospitals: DirectoryHospital[]): MetricDi
 export function ownershipBucket(ownership: string | undefined): string {
   if (!ownership) return 'Unknown';
   if (ownership.includes('Voluntary non-profit')) return 'Non-profit';
-  if (ownership === 'Proprietary') return 'Gov';
+  if (ownership === 'Proprietary') return 'Proprietary';
   if (ownership.includes('Government')) return 'Gov';
   return 'Other';
 }
