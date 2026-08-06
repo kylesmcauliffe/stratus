@@ -1,0 +1,67 @@
+---
+import DirectoryLayout from '@/layouts/DirectoryLayout.astro';
+import CollapsibleHospitalList from '@/components/directory/CollapsibleHospitalList.astro';
+import DirectoryHospitalTable from '@/components/directory/DirectoryHospitalTable.astro';
+import StateProfilePanels from '@/components/directory/StateProfilePanels.astro';
+import { buildStateMapEntries } from '@/lib/state-map-data';
+import { directoryFilterStateUrl } from '@/lib/directory-links';
+import { directoryStates, getStateByCode } from '@/lib/state-rollups';
+
+export function getStaticPaths() {
+  return directoryStates().map(({ state }) => ({ params: { state } }));
+}
+
+const { state: stateParam } = Astro.params;
+const entry = getStateByCode(stateParam!);
+
+if (!entry) {
+  return Astro.redirect('/states');
+}
+
+const { state, summary, hospitals, rollup } = entry;
+const sorted = [...hospitals].sort((a, b) => {
+  const ar = a.teamRankByCjr ?? 9999;
+  const br = b.teamRankByCjr ?? 9999;
+  if (ar !== br) return ar - br;
+  return a.name.localeCompare(b.name);
+});
+
+const filterHref = directoryFilterStateUrl(state);
+const stateMapRows = buildStateMapEntries();
+const title = `${state} — CMS TEAM hospitals`;
+const description = `${summary.count} mandated TEAM hospitals in ${state}.`;
+---
+
+<DirectoryLayout title={title} description={description}>
+  <div class="site-container py-3 md:py-4">
+    <div class="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-brand-gray-200 pb-2">
+      <div>
+        <h1 class="text-brand-blue text-xl font-bold tracking-tight md:text-2xl">{state}</h1>
+        <p class="text-brand-gray-700 text-xs">{description}</p>
+        <p class="text-brand-gray-600 mt-0.5 text-[0.65rem]">
+          {summary.pctRural}% rural · {summary.totalBeds.toLocaleString('en-US')} total beds ·{' '}
+          {summary.withPublicDataCount} with public quality data
+        </p>
+      </div>
+      <a
+        href={filterHref}
+        class="text-brand-blue border-brand-gray-200 hover:bg-brand-sky shrink-0 rounded-button border bg-white px-3 py-1.5 text-xs font-semibold"
+      >
+        Filter directory →
+      </a>
+    </div>
+
+    <StateProfilePanels
+      state={state}
+      summary={summary}
+      rollup={rollup}
+      hospitals={hospitals}
+      stateMapRows={stateMapRows}
+      peerLabel="national TEAM median"
+    />
+
+    <CollapsibleHospitalList count={sorted.length}>
+      <DirectoryHospitalTable hospitals={sorted} />
+    </CollapsibleHospitalList>
+  </div>
+</DirectoryLayout>

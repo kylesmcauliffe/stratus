@@ -1,0 +1,86 @@
+---
+import type { TeamHospital } from '@/data/team-hospitals';
+import { getRainfallTrackerByCcn } from '@/lib/rainfall-tracker';
+import { getPublicProfile } from '@/data/hospital-public-profile';
+
+interface Props {
+  hospital: TeamHospital;
+}
+
+const { hospital } = Astro.props;
+const profileUrl = Astro.url.href;
+const tracker = getRainfallTrackerByCcn(hospital.ccn);
+const publicProfile = getPublicProfile(hospital);
+const g = publicProfile?.general;
+const compareHref = `/compare?h=${encodeURIComponent(hospital.slug)}`;
+---
+
+<div class="flex flex-wrap items-center gap-2 text-xs">
+  <a
+    href={compareHref}
+    class="text-brand-blue border-brand-gray-200 hover:bg-brand-sky rounded-button border px-2.5 py-1 font-semibold"
+  >
+    Compare
+  </a>
+  <button
+    type="button"
+    id="profile-copy-link"
+    data-url={profileUrl}
+    class="text-brand-blue border-brand-gray-200 hover:bg-brand-sky rounded-button border px-2.5 py-1 font-semibold"
+  >
+    Copy link
+  </button>
+  {
+    g?.phone && (
+      <a href={`tel:${g.phone.replace(/\D/g, '')}`} class="text-brand-blue font-semibold hover:underline">
+        {g.phone}
+      </a>
+    )
+  }
+  {
+    tracker && (
+      <>
+        <span class="text-brand-gray-400">|</span>
+        <span class="text-brand-gray-800 font-semibold tabular-nums">
+          {tracker.teamRankByCjr != null && `CJR #${tracker.teamRankByCjr}`}
+          {tracker.outreachStatus === 'Yes' && ' · Outreach'}
+        </span>
+        <button
+          type="button"
+          class="text-brand-blue font-semibold hover:underline"
+          data-profile-goto-tab="rainfall"
+        >
+          Pipeline →
+        </button>
+      </>
+    )
+  }
+</div>
+
+<script>
+  const btn = document.getElementById('profile-copy-link');
+  btn?.addEventListener('click', async () => {
+    const url = btn.getAttribute('data-url');
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      const prev = btn.textContent;
+      btn.textContent = 'Copied';
+      window.setTimeout(() => {
+        btn.textContent = prev;
+      }, 2000);
+    } catch {
+      /* clipboard blocked */
+    }
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-profile-goto-tab]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.profileGotoTab;
+      if (!id) return;
+      window.location.hash = id;
+      document.dispatchEvent(new CustomEvent('profile-tabs:activate', { detail: { id } }));
+      document.getElementById(`profile-tab-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+</script>

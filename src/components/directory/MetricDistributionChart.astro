@@ -1,0 +1,75 @@
+---
+import type { MetricDistribution } from '@/lib/metric-distribution';
+import { formatCjrMedian, formatStarsMedian, medianLabelForDistribution } from '@/lib/metric-distribution';
+
+interface Props {
+  distribution: MetricDistribution;
+  medianLabel?: string;
+  highlightBin?: string;
+  markerNote?: string;
+}
+
+const { distribution, medianLabel, highlightBin, markerNote } = Astro.props;
+const med =
+  distribution.median != null
+    ? medianLabel ??
+      (distribution.title.includes('CJR')
+        ? formatCjrMedian(distribution.median)
+        : distribution.title.includes('stars')
+          ? formatStarsMedian(distribution.median)
+          : medianLabelForDistribution(distribution))
+    : null;
+---
+
+<div class="metric-distribution border-brand-gray-200 min-w-0 rounded-md border bg-white px-2 py-1.5">
+  <div class="mb-1 flex flex-wrap items-baseline justify-between gap-1">
+    <h3 class="text-brand-blue text-[0.65rem] font-bold">{distribution.title}</h3>
+    {
+      med != null && (
+        <span class="text-brand-gray-600 text-[0.6rem]">
+          Median: <span class="font-semibold tabular-nums">{med}</span>
+        </span>
+      )
+    }
+  </div>
+  {
+    markerNote && (
+      <p class="text-brand-blue mb-1 text-[0.6rem] font-semibold">{markerNote}</p>
+    )
+  }
+  <ul class="space-y-0.5" role="list">
+    {
+      distribution.bins.map((bin) => {
+        const width = bin.pct;
+        const isHighlight = highlightBin === bin.label;
+        return (
+          <li class:list={[isHighlight && 'metric-distribution__bin--highlight']}>
+            <div class="flex items-center justify-between gap-2 text-[0.6rem]">
+              <span class="text-brand-gray-700 w-12 shrink-0 font-medium">
+                {bin.label}
+                {isHighlight && markerNote && (
+                  <span class="text-brand-blue ml-0.5 text-[0.55rem] font-bold" aria-hidden="true">
+                    ◆
+                  </span>
+                )}
+              </span>
+              <span class="text-brand-gray-900 shrink-0 tabular-nums font-bold">
+                {bin.count}
+                <span class="text-brand-gray-500 font-normal"> ({bin.pct}%)</span>
+              </span>
+            </div>
+            <div class="ind-bar-track mt-0.5 h-1.5" aria-hidden="true">
+              <div
+                class:list={[
+                  'h-full',
+                  isHighlight ? 'metric-distribution__bar--highlight' : 'ind-bar-fill ind-bar-fill--mix',
+                ]}
+                style={`width: ${width}%`}
+              />
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+</div>
