@@ -1,0 +1,33 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  countLabel?: string;
+  open?: boolean;
+}
+
+const { id, title, description, countLabel, open = true } = Astro.props;
+---
+
+<details id={id} class="geography-rollup-details group min-w-0 scroll-mt-20" open={open}>
+  <summary
+    class="border-brand-gray-200 cursor-pointer list-none border-b pb-2 marker:content-none [&::-webkit-details-marker]:hidden"
+  >
+    <div class="flex flex-wrap items-end justify-between gap-2">
+      <div class="min-w-0">
+        <span class="inline-flex items-center gap-1">
+          <span aria-hidden="true" class="cohort-chevron text-brand-gray-500 inline-block transition-transform">
+            ▸
+          </span>
+          <span class="text-brand-blue text-lg font-bold tracking-tight">{title}</span>
+        </span>
+        <p class="text-brand-gray-600 mt-0.5 text-xs">{description}</p>
+      </div>
+      {countLabel && <p class="text-brand-gray-500 shrink-0 text-[0.65rem]">{countLabel}</p>}
+    </div>
+  </summary>
+  <div class="pt-1.5">
+    <slot />
+  </div>
+</details>

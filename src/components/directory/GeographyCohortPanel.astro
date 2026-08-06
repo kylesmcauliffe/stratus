@@ -1,0 +1,93 @@
+---
+import TeamStateMap from '@/components/TeamStateMap.astro';
+import InteractiveMetricPie from '@/components/directory/InteractiveMetricPie.astro';
+import { directoryHospitals } from '@/lib/directory-index';
+import { buildStateMapEntries } from '@/lib/state-map-data';
+import { buildGeographyCohortChartSet } from '@/lib/geography-cohort';
+import { teamHospitals } from '@/data/team-hospitals';
+
+const mapStates = buildStateMapEntries();
+const charts = buildGeographyCohortChartSet(directoryHospitals);
+const rosterCount = teamHospitals.length;
+const pieSize = 172;
+---
+
+<section
+  class="geography-cohort-panel border-brand-gray-200 mb-3 rounded-card border bg-white p-2 shadow-card"
+  aria-label="National TEAM cohort graphs"
+>
+  <details id="graphs" class="geography-graphs-details group scroll-mt-20" open>
+    <summary
+      class="text-brand-blue flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-bold marker:content-none [&::-webkit-details-marker]:hidden"
+    >
+      <span class="inline-flex items-center gap-1">
+        <span aria-hidden="true" class="cohort-chevron text-brand-gray-500 inline-block transition-transform">
+          ▸
+        </span>
+        Graphs
+      </span>
+      <span class="text-brand-gray-600 text-[0.65rem] font-normal">
+        National TEAM cohort ({rosterCount} hospitals)
+      </span>
+      <span class="text-brand-gray-500 w-full text-[0.6rem] font-normal sm:w-auto">
+        Hover or click a slice · click again to clear · use “View on roster” to filter
+      </span>
+    </summary>
+
+    <div class="geography-cohort-panel__grid mt-2 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] lg:items-start">
+      <div
+        id="map"
+        class="border-brand-gray-200 scroll-mt-20 flex min-w-0 flex-col rounded-md border bg-brand-gray-50/60 p-2"
+      >
+        <h2 class="text-brand-blue mb-0.5 text-xs font-bold">Map</h2>
+        <p class="text-brand-gray-500 mb-1.5 text-[0.6rem]">Click a state for its profile.</p>
+        <TeamStateMap states={mapStates} linkMode="profile" compact />
+      </div>
+
+      <div class="geography-cohort-panel__pies grid min-w-0 grid-cols-2 gap-2">
+        <InteractiveMetricPie
+          distribution={charts.rural.distribution}
+          binLinks={charts.rural.binLinks}
+          size={pieSize}
+        />
+        <InteractiveMetricPie
+          distribution={charts.ownership.distribution}
+          binLinks={charts.ownership.binLinks}
+          size={pieSize}
+        />
+        <InteractiveMetricPie
+          distribution={charts.cjr.distribution}
+          binLinks={charts.cjr.binLinks}
+          size={pieSize}
+        />
+        <InteractiveMetricPie
+          distribution={charts.stars.distribution}
+          binLinks={charts.stars.binLinks}
+          size={pieSize}
+        />
+      </div>
+    </div>
+  </details>
+</section>
+
+<script>
+  const GEO_GRAPHS_STORAGE_KEY = 'rainfall:geography-graphs-open';
+
+  const graphsDetails = document.getElementById('graphs');
+  if (graphsDetails instanceof HTMLDetailsElement) {
+    try {
+      const stored = sessionStorage.getItem(GEO_GRAPHS_STORAGE_KEY);
+      if (stored === '0') graphsDetails.open = false;
+    } catch {
+      /* keep default open */
+    }
+    graphsDetails.addEventListener('toggle', () => {
+      try {
+        sessionStorage.setItem(GEO_GRAPHS_STORAGE_KEY, graphsDetails.open ? '1' : '0');
+      } catch {
+        /* ignore */
+      }
+    });
+  }
+
+</script>

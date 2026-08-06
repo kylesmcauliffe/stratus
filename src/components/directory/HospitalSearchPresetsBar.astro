@@ -1,0 +1,74 @@
+---
+interface Props {
+  totalCount: number;
+}
+
+const { totalCount } = Astro.props;
+
+const quickLinks = [
+  { label: 'Top CJR', href: '/?sort=cjr' },
+  { label: 'Outreach + CJR', href: '/?outreach=Yes&maxCjr=50&sort=cjr' },
+  { label: 'Pipeline', href: '/?hasPipeline=1' },
+  { label: 'Compare', href: '/compare' },
+];
+---
+
+<div class="cohort-map-presets border-brand-gray-200 mt-1.5 border-t pt-1.5">
+  <div class="flex flex-wrap items-center gap-1">
+    <span class="dir-label mb-0 shrink-0">Presets</span>
+    <button
+      type="button"
+      class="hospital-search-preset dir-btn rounded-full px-2 py-0.5 text-[0.65rem]"
+      data-preset="outreach"
+    >
+      Outreach
+    </button>
+    <button
+      type="button"
+      class="hospital-search-preset dir-btn rounded-full px-2 py-0.5 text-[0.65rem]"
+      data-preset="topCjr"
+    >
+      Top 50 CJR
+    </button>
+    <button
+      type="button"
+      class="hospital-search-preset dir-btn rounded-full px-2 py-0.5 text-[0.65rem]"
+      data-preset="top50"
+    >
+      CJR flag
+    </button>
+    <button
+      type="button"
+      class="hospital-search-preset dir-btn rounded-full px-2 py-0.5 text-[0.65rem]"
+      data-preset="pipeline"
+    >
+      Pipeline
+    </button>
+    <button
+      type="button"
+      id="hospital-search-watchlist-preset"
+      class="dir-btn rounded-full px-2 py-0.5 text-[0.65rem]"
+    >
+      Watchlist
+    </button>
+  </div>
+  <nav class="mt-1.5 flex flex-wrap items-center gap-1" aria-label="Quick links">
+    <span class="dir-label mb-0 shrink-0">Quick</span>
+    {
+      quickLinks.map((link) => (
+        <a href={link.href} class="dir-btn rounded-full px-2 py-0.5 text-[0.65rem]">
+          {link.label}
+        </a>
+      ))
+    }
+  </nav>
+  <p
+    id="hospital-search-summary"
+    class="text-brand-blue mt-1.5 text-[0.65rem] font-medium leading-snug"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    {totalCount} hospitals · roster sorted by CJR rank · click column headers to re-sort · filters narrow
+    the list
+  </p>
+</div>
