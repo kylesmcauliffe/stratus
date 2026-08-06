@@ -1,0 +1,99 @@
+---
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { stateBenchmarks, researchBenchmarks } from '@/lib/research-benchmarks';
+import { cjrTone, starsTone, TONE_SURFACE } from '@/lib/visual-indicators';
+import { stateProfilePath } from '@/lib/directory-links';
+import { regionStateProfilePath } from '@/lib/region-state-paths';
+
+interface Props {
+  hospitals: DirectoryHospital[];
+  /** When set, state links stay inside this region (sidebar drill-down). */
+  regionSlug?: string;
+}
+
+const { hospitals, regionSlug } = Astro.props;
+
+const byState = new Map<string, DirectoryHospital[]>();
+for (const h of hospitals) {
+  const list = byState.get(h.state) ?? [];
+  list.push(h);
+  byState.set(h.state, list);
+}
+
+function median(nums: number[]): number | null {
+  if (!nums.length) return null;
+  const s = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
+}
+
+const rows =
+  byState.size >= 2
+    ? [...byState.entries()]
+        .map(([state, list]) => {
+          const stars = list.map((h) => h.overallRating).filter((n): n is number => n != null);
+          const cjr = list.map((h) => h.teamRankByCjr).filter((n): n is number => n != null);
+          const bench = stateBenchmarks[state];
+          const medStars = median(stars);
+          const medCjr = median(cjr);
+          return {
+            state,
+            count: list.length,
+            medStars,
+            medCjr,
+            starsTone: starsTone(medStars, bench?.medianStars ?? researchBenchmarks.medianStars),
+            cjrTone: cjrTone(medCjr, bench?.medianTeamRankCjr ?? researchBenchmarks.medianTeamRankCjr),
+            profileHref: regionSlug
+              ? regionStateProfilePath(regionSlug, state)
+              : stateProfilePath(state),
+          };
+        })
+        .sort((a, b) => b.count - a.count)
+    : [];
+---
+
+{
+  rows.length > 0 && (
+    <div class="border-brand-gray-200 rounded-md border bg-white px-2 py-1.5">
+      <p class="text-brand-blue mb-1 text-[0.65rem] font-bold">
+        {regionSlug ? 'States in region' : 'States'} ({rows.length})
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-[0.65rem]">
+          <thead>
+            <tr class="text-brand-gray-600 border-brand-gray-200 border-b">
+              <th class="py-1 pr-2 font-semibold">State</th>
+              <th class="py-1 pr-2 font-semibold">#</th>
+              <th class="py-1 pr-2 font-semibold">Med ★</th>
+              <th class="py-1 font-semibold">Med CJR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((row) => (
+                <tr class="border-brand-gray-100 border-b last:border-0">
+                  <td class="py-1 pr-2">
+                    <a href={row.profileHref} class="dir-entity-link font-semibold hover:underline">
+                      {row.state}
+                    </a>
+                  </td>
+                  <td class="py-1 pr-2 tabular-nums">{row.count}</td>
+                  <td class="py-1 pr-2">
+                    <span class:list={[TONE_SURFACE[row.starsTone], 'rounded px-1 py-0.5 font-bold tabular-nums']}>
+                      {row.medStars ?? '—'}
+                    </span>
+                  </td>
+                  <td class="py-1">
+                    <span class:list={[TONE_SURFACE[row.cjrTone], 'rounded px-1 py-0.5 font-bold tabular-nums']}>
+                      {row.medCjr != null ? `#${Math.round(row.medCjr)}` : '—'}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}

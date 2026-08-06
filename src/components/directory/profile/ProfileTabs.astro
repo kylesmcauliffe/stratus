@@ -1,0 +1,119 @@
+---
+interface Tab {
+  id: string;
+  label: string;
+}
+
+interface Props {
+  tabs: Tab[];
+}
+
+const { tabs } = Astro.props;
+const tabIds = tabs.map((t) => t.id);
+---
+
+<div class="profile-tabs" data-profile-tabs data-tab-ids={JSON.stringify(tabIds)}>
+  <div
+    class="profile-toolbar border-brand-gray-200 mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border bg-white px-2 py-1.5"
+  >
+    <div
+      class="profile-toolbar__tabs flex flex-wrap items-center gap-0.5"
+      role="tablist"
+      aria-label="Profile sections"
+    >
+      {
+        tabs.map((tab, i) => (
+          <button
+            type="button"
+            role="tab"
+            class="profile-tabs__btn text-brand-gray-600 hover:text-brand-blue rounded-sm border-b-2 border-transparent px-2 py-1 text-xs font-semibold transition-colors"
+            data-tab={tab.id}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            aria-controls={`profile-panel-${tab.id}`}
+            id={`profile-tab-${tab.id}`}
+          >
+            {tab.label}
+          </button>
+        ))
+      }
+    </div>
+    <div
+      class="profile-toolbar__actions border-brand-gray-200 flex min-w-0 flex-wrap items-center gap-2 sm:ml-auto sm:border-l sm:pl-2"
+    >
+      <slot name="actions" />
+    </div>
+  </div>
+
+  <div class="profile-tabs__panels">
+    <slot />
+  </div>
+</div>
+
+<script>
+  const VALID_TAB = /^[a-z]+$/;
+
+  function initProfileTabs() {
+    document.querySelectorAll('[data-profile-tabs]').forEach((root) => {
+      const buttons = root.querySelectorAll<HTMLButtonElement>('.profile-tabs__btn');
+      const panels = root.querySelectorAll<HTMLElement>('[data-profile-panel]');
+      if (!buttons.length || !panels.length) return;
+
+      let ids: string[] = [];
+      try {
+        ids = JSON.parse(root.getAttribute('data-tab-ids') ?? '[]');
+      } catch {
+        ids = [];
+      }
+
+      const activate = (id: string, updateHash = true) => {
+        if (!ids.includes(id)) return;
+        buttons.forEach((btn) => {
+          const on = btn.dataset.tab === id;
+          btn.setAttribute('aria-selected', on ? 'true' : 'false');
+          btn.classList.toggle('border-brand-blue', on);
+          btn.classList.toggle('text-brand-blue', on);
+          btn.classList.toggle('border-transparent', !on);
+          btn.classList.toggle('text-brand-gray-600', !on);
+        });
+        panels.forEach((panel) => {
+          const show = panel.dataset.profilePanel === id;
+          panel.classList.toggle('hidden', !show);
+          panel.hidden = !show;
+        });
+        if (updateHash) {
+          const next = `#${id}`;
+          if (window.location.hash !== next) {
+            history.replaceState(null, '', `${window.location.pathname}${window.location.search}${next}`);
+          }
+        }
+      };
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.tab;
+          if (id) activate(id);
+        });
+      });
+
+      document.addEventListener('profile-tabs:activate', (event) => {
+        const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+        if (id) activate(id, true);
+      });
+
+      const fromHash = () => {
+        const raw = window.location.hash.replace(/^#/, '');
+        return VALID_TAB.test(raw) && ids.includes(raw) ? raw : null;
+      };
+
+      window.addEventListener('hashchange', () => {
+        const id = fromHash();
+        if (id) activate(id, false);
+      });
+
+      const initial = fromHash() ?? buttons[0]?.dataset.tab;
+      if (initial) activate(initial, !fromHash());
+    });
+  }
+
+  initProfileTabs();
+</script>

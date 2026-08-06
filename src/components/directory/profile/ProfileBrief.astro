@@ -1,0 +1,78 @@
+---
+import type { TeamHospital } from '@/data/team-hospitals';
+import { hospitalsInState } from '@/lib/similar-hospitals';
+import { teamHospitals } from '@/data/team-hospitals';
+import ProfileResearchTools from '@/components/directory/profile/ProfileResearchTools.astro';
+import ProfileDashboard from '@/components/directory/profile/ProfileDashboard.astro';
+import ProfileRainfallPanel from '@/components/directory/profile/ProfileRainfallPanel.astro';
+import ProfileTabs from '@/components/directory/profile/ProfileTabs.astro';
+import ProfileTabPanel from '@/components/directory/profile/ProfileTabPanel.astro';
+import ContextCompare from '@/components/directory/profile/ContextCompare.astro';
+import { getDirectoryHospital } from '@/lib/directory-index';
+import { directoryFilterStateUrl, stateProfilePath } from '@/lib/directory-links';
+import ProfileBackground from '@/components/directory/profile/ProfileBackground.astro';
+import ProfileCohortPosition from '@/components/directory/profile/ProfileCohortPosition.astro';
+import ProfileSidebar from '@/components/directory/profile/ProfileSidebar.astro';
+
+interface Props {
+  hospital: TeamHospital;
+}
+
+const { hospital } = Astro.props;
+const directoryRecord = getDirectoryHospital(hospital.slug);
+const statePeerCount = hospitalsInState(hospital.state, teamHospitals) - 1;
+const stateProfileHref = stateProfilePath(hospital.state);
+const stateFilterHref = directoryFilterStateUrl(hospital.state);
+const tabs = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'bio', label: 'Bio' },
+  { id: 'quality', label: 'Quality' },
+  { id: 'payment', label: 'Payment' },
+  { id: 'market', label: 'Market' },
+  { id: 'rainfall', label: 'Rainfall' },
+];
+---
+
+<div class="site-container profile-page py-1.5 md:py-2">
+  <ProfileTabs tabs={tabs}>
+    <ProfileSidebar slot="actions" hospital={hospital} />
+        <ProfileTabPanel id="overview" hidden={false}>
+          <div class="profile-overview min-w-0 space-y-1.5">
+            <ProfileCohortPosition record={directoryRecord} />
+            <ContextCompare record={directoryRecord} state={hospital.state} />
+            <p class="text-brand-gray-600 text-[0.65rem] leading-snug">
+              {statePeerCount > 0 ? (
+                <>
+                  <a href={stateProfileHref} class="dir-entity-link font-semibold">{statePeerCount}</a> more in{' '}
+                  <a href={stateProfileHref} class="dir-entity-link">{hospital.state}</a>
+                  {' · '}
+                  <a href={stateFilterHref} class="text-brand-gray-500 hover:underline">Filter</a>
+                </>
+              ) : (
+                <>Only TEAM hospital in <a href={stateProfileHref} class="dir-entity-link">{hospital.state}</a>.</>
+              )}
+            </p>
+            <ProfileResearchTools hospital={hospital} record={directoryRecord} />
+          </div>
+        </ProfileTabPanel>
+
+        <ProfileTabPanel id="bio" hidden={true}>
+          <div class="min-w-0 space-y-1.5">
+            <ProfileBackground hospital={hospital} record={directoryRecord} />
+          </div>
+        </ProfileTabPanel>
+
+        <ProfileTabPanel id="quality">
+          <ProfileDashboard hospital={hospital} record={directoryRecord} section="quality" />
+        </ProfileTabPanel>
+        <ProfileTabPanel id="payment">
+          <ProfileDashboard hospital={hospital} record={directoryRecord} section="payment" />
+        </ProfileTabPanel>
+        <ProfileTabPanel id="market">
+          <ProfileDashboard hospital={hospital} record={directoryRecord} section="market" />
+        </ProfileTabPanel>
+        <ProfileTabPanel id="rainfall">
+          <ProfileRainfallPanel hospital={hospital} record={directoryRecord} />
+        </ProfileTabPanel>
+  </ProfileTabs>
+</div>
