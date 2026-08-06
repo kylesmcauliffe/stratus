@@ -1,0 +1,247 @@
+---
+import type { MetricDistribution } from '@/lib/metric-distribution';
+import { medianLabelForDistribution } from '@/lib/metric-distribution';
+import { buildPieSliceGeometry } from '@/lib/pie-chart-geometry';
+import { pieLabelTextFill } from '@/lib/pie-chart-colors';
+import { pieSegmentHint } from '@/lib/pie-segment-copy';
+
+interface Props {
+  distribution: MetricDistribution;
+  binLinks?: Record<string, string>;
+  /** SVG width/height in px */
+  size?: number;
+}
+
+const { distribution, binLinks = {}, size = 168 } = Astro.props;
+const slices = buildPieSliceGeometry(distribution.bins, size);
+const med =
+  distribution.median != null ? medianLabelForDistribution(distribution) : null;
+const chartId = `pie-${distribution.title.replace(/[^\w]+/g, '-').toLowerCase()}`;
+---
+
+<div
+  class="interactive-metric-pie border-brand-gray-200 flex min-w-0 flex-col rounded-md border bg-white px-2 py-2"
+  data-interactive-pie
+>
+  <h3 class="text-brand-blue text-center text-[0.7rem] font-bold leading-tight">
+    {distribution.title}
+  </h3>
+  {
+    med && (
+      <p class="text-brand-gray-500 mb-1 text-center text-[0.55rem]">
+        Median: <span class="text-brand-gray-700 font-semibold">{med}</span>
+      </p>
+    )
+  }
+  {
+    slices.length === 0 ? (
+      <p class="text-brand-gray-500 py-6 text-center text-[0.65rem]">No data in cohort.</p>
+    ) : (
+      <>
+        <div
+          class="interactive-metric-pie__chart relative mx-auto"
+          style={`width: ${size}px; height: ${size}px`}
+          data-pie-size={size}
+        >
+          <svg
+            class="interactive-metric-pie__svg size-full overflow-visible"
+            viewBox={`0 0 ${size} ${size}`}
+            role="img"
+            aria-labelledby={`${chartId}-title`}
+          >
+            <title id={`${chartId}-title`}>{distribution.title}</title>
+            {
+              slices.map((slice) => {
+                const href = binLinks[slice.label];
+                const hint = pieSegmentHint(distribution.title, slice.label);
+                const fill = pieLabelTextFill(slice.color);
+                const labelLines = (
+                  <>
+                    {slice.showLabel && (
+                      <text
+                        x={slice.labelX}
+                        y={slice.labelY + (slice.showInSliceName ? -3 : 0)}
+                        text-anchor="middle"
+                        dominant-baseline="middle"
+                        fill={fill}
+                        font-size="11"
+                        font-weight="700"
+                        pointer-events="none"
+                        class="select-none"
+                      >
+                        {slice.pct}%
+                      </text>
+                    )}
+                    {slice.showLabel && slice.showInSliceName && (
+                      <text
+                        x={slice.labelX}
+                        y={slice.labelY + 9}
+                        text-anchor="middle"
+                        dominant-baseline="middle"
+                        fill={fill}
+                        font-size="8"
+                        font-weight="600"
+                        pointer-events="none"
+                        class="select-none"
+                      >
+                        {slice.label}
+                      </text>
+                    )}
+                    {slice.showMarker && (
+                      <text
+                        x={slice.markerX}
+                        y={slice.markerY}
+                        text-anchor="middle"
+                        dominant-baseline="middle"
+                        fill={fill}
+                        font-size="14"
+                        font-weight="700"
+                        pointer-events="none"
+                        class="select-none"
+                        aria-hidden="true"
+                      >
+                        ★
+                      </text>
+                    )}
+                  </>
+                );
+                return (
+                  <g
+                    class="interactive-metric-pie__slice group cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    data-pie-label={slice.label}
+                    data-pie-count={String(slice.count)}
+                    data-pie-pct={String(slice.pct)}
+                    data-pie-hint={hint}
+                    data-pie-href={href ?? undefined}
+                  >
+                    <path
+                      d={slice.pathD}
+                      fill={slice.color}
+                      class="interactive-metric-pie__path transition-[opacity,filter,stroke] duration-150"
+                    />
+                    {slice.showLabel || slice.showMarker ? labelLines : null}
+                  </g>
+                );
+              })
+            }
+          </svg>
+        </div>
+        <div
+          class="interactive-metric-pie__detail border-brand-gray-100 text-brand-gray-500 mt-1.5 min-h-[3.25rem] rounded-sm border border-dashed bg-brand-gray-50/60 px-2 py-1.5 text-center text-[0.6rem] leading-snug"
+          aria-live="polite"
+        >
+          <span class="interactive-metric-pie__detail-placeholder">Hover or click a slice</span>
+        </div>
+      </>
+    )
+  }
+</div>
+
+<script>
+  function escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function initInteractivePies() {
+    document.querySelectorAll('[data-interactive-pie]').forEach((card) => {
+      if (card instanceof HTMLElement && card.dataset.pieBound === '1') return;
+      if (card instanceof HTMLElement) card.dataset.pieBound = '1';
+
+      const chart = card.querySelector('[data-pie-size]');
+      const detail = card.querySelector('.interactive-metric-pie__detail');
+      if (!(chart instanceof HTMLElement) || !(detail instanceof HTMLElement)) return;
+
+      const slices = [...chart.querySelectorAll('.interactive-metric-pie__slice')];
+      let selected: Element | null = null;
+      let hovered: Element | null = null;
+
+      const clearSelection = () => {
+        selected = null;
+        card.classList.remove('interactive-metric-pie--isolating');
+        slices.forEach((s) => s.classList.remove('is-selected'));
+      };
+
+      const renderDetail = (slice: Element | null) => {
+        if (!slice) {
+          detail.innerHTML =
+            '<span class="interactive-metric-pie__detail-placeholder">Hover or click a slice</span>';
+          return;
+        }
+
+        const label = slice.getAttribute('data-pie-label') ?? '';
+        const count = slice.getAttribute('data-pie-count') ?? '';
+        const pct = slice.getAttribute('data-pie-pct') ?? '';
+        const hint = slice.getAttribute('data-pie-hint') ?? '';
+        const href = slice.getAttribute('data-pie-href');
+        const rosterLink = href
+          ? `<p class="mt-1"><a href="${escapeHtml(href)}" class="text-brand-blue font-semibold hover:underline">View on roster →</a></p>`
+          : '';
+
+        detail.innerHTML = `<p class="text-brand-gray-900 font-bold tabular-nums">${escapeHtml(count)} hospitals <span class="text-brand-gray-500 font-normal">(${escapeHtml(pct)}%)</span></p>
+          <p class="text-brand-blue font-semibold">${escapeHtml(label)}</p>
+          <p class="text-brand-gray-600 leading-snug">${escapeHtml(hint)}</p>${rosterLink}`;
+      };
+
+      const setHover = (slice: Element | null) => {
+        slices.forEach((s) => s.classList.remove('is-hovered'));
+        hovered = slice;
+        if (slice) slice.classList.add('is-hovered');
+        if (!selected) renderDetail(slice);
+      };
+
+      const selectSlice = (slice: Element) => {
+        if (selected === slice) {
+          clearSelection();
+          renderDetail(hovered);
+          return;
+        }
+        clearSelection();
+        selected = slice;
+        slice.classList.add('is-selected');
+        card.classList.add('interactive-metric-pie--isolating');
+        renderDetail(slice);
+      };
+
+      slices.forEach((slice) => {
+        slice.addEventListener('mouseenter', () => setHover(slice));
+        slice.addEventListener('mouseleave', () => {
+          if (hovered === slice) {
+            hovered = null;
+            slice.classList.remove('is-hovered');
+            if (!selected) renderDetail(null);
+          }
+        });
+        slice.addEventListener('click', (event) => {
+          event.preventDefault();
+          selectSlice(slice);
+        });
+        slice.addEventListener('keydown', (event) => {
+          const key = (event as KeyboardEvent).key;
+          if (key === 'Enter' || key === ' ') {
+            event.preventDefault();
+            selectSlice(slice);
+          }
+        });
+      });
+
+      chart.addEventListener('mouseleave', () => {
+        if (!selected) setHover(null);
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Node) || card.contains(event.target)) return;
+        clearSelection();
+        renderDetail(null);
+      });
+    });
+  }
+
+  initInteractivePies();
+  document.addEventListener('astro:page-load', initInteractivePies);
+</script>
