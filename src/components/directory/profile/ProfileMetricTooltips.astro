@@ -1,0 +1,177 @@
+---
+/** Hover + click insight drawer for profile metric tiles (see global.css). */
+---
+
+<div
+  id="profile-metric-tip"
+  class="profile-metric-tip pointer-events-none hidden"
+  role="tooltip"
+  aria-hidden="true"
+>
+  <p id="profile-metric-tip-title" class="profile-metric-tip__title"></p>
+  <p id="profile-metric-tip-body" class="profile-metric-tip__body"></p>
+  <p id="profile-metric-tip-takeaway" class="profile-metric-tip__takeaway"></p>
+</div>
+
+<aside
+  id="profile-metric-drawer"
+  class="profile-metric-drawer hidden"
+  aria-hidden="true"
+  aria-labelledby="profile-metric-drawer-title"
+>
+  <button
+    type="button"
+    id="profile-metric-drawer-close"
+    class="text-brand-gray-500 hover:text-brand-blue absolute top-2 right-2 text-xs font-bold"
+    aria-label="Close insight panel"
+  >
+    Close
+  </button>
+  <p id="profile-metric-drawer-title" class="profile-metric-drawer__title text-brand-blue pr-8 text-sm font-bold"></p>
+  <p id="profile-metric-drawer-body" class="profile-metric-drawer__body text-brand-gray-700 mt-2 text-xs leading-relaxed"></p>
+  <p id="profile-metric-drawer-takeaway" class="profile-metric-drawer__takeaway text-brand-blue mt-3 text-xs font-semibold"></p>
+</aside>
+<div id="profile-metric-drawer-backdrop" class="profile-metric-drawer-backdrop hidden" aria-hidden="true"></div>
+
+<script>
+  const HOVER_MS = 200;
+  const VIEWPORT_MARGIN = 8;
+  /** Sticky directory header — keep tooltips below it */
+  const HEADER_SAFE_TOP = 56;
+
+  const tip = document.getElementById('profile-metric-tip');
+  const tipTitle = document.getElementById('profile-metric-tip-title');
+  const tipBody = document.getElementById('profile-metric-tip-body');
+  const tipTakeaway = document.getElementById('profile-metric-tip-takeaway');
+  const drawer = document.getElementById('profile-metric-drawer');
+  const drawerTitle = document.getElementById('profile-metric-drawer-title');
+  const drawerBody = document.getElementById('profile-metric-drawer-body');
+  const drawerTakeaway = document.getElementById('profile-metric-drawer-takeaway');
+  const drawerClose = document.getElementById('profile-metric-drawer-close');
+  const backdrop = document.getElementById('profile-metric-drawer-backdrop');
+
+  /** Escape `main` stacking context so fixed overlays sit above the sticky header */
+  [tip, drawer, backdrop].forEach((el) => {
+    if (el && el.parentElement !== document.body) document.body.appendChild(el);
+  });
+
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let active: HTMLElement | null = null;
+
+  const hideTip = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    active = null;
+    tip?.classList.add('hidden');
+    tip?.setAttribute('aria-hidden', 'true');
+  };
+
+  const positionTip = (el: HTMLElement) => {
+    if (!tip) return;
+    const place = () => {
+      const rect = el.getBoundingClientRect();
+      const tipRect = tip.getBoundingClientRect();
+      const tipW = tipRect.width > 0 ? tipRect.width : 288;
+      const tipH = tipRect.height > 0 ? tipRect.height : 120;
+      let left = rect.left + rect.width / 2 - tipW / 2;
+      let top = rect.bottom + VIEWPORT_MARGIN;
+      left = Math.max(
+        VIEWPORT_MARGIN,
+        Math.min(left, window.innerWidth - tipW - VIEWPORT_MARGIN),
+      );
+      const spaceBelow = window.innerHeight - rect.bottom - VIEWPORT_MARGIN;
+      const spaceAbove = rect.top - HEADER_SAFE_TOP - VIEWPORT_MARGIN;
+      if (tipH > spaceBelow && spaceAbove > spaceBelow) {
+        top = rect.top - tipH - VIEWPORT_MARGIN;
+      }
+      top = Math.max(
+        HEADER_SAFE_TOP + VIEWPORT_MARGIN,
+        Math.min(top, window.innerHeight - tipH - VIEWPORT_MARGIN),
+      );
+      tip.style.left = `${left}px`;
+      tip.style.top = `${top}px`;
+    };
+    requestAnimationFrame(() => requestAnimationFrame(place));
+  };
+
+  const showTip = (el: HTMLElement) => {
+    if (!tip || !tipTitle || !tipBody || !tipTakeaway) return;
+    const title = el.dataset.explainerTitle ?? '';
+    const body = el.dataset.explainerBody ?? '';
+    const takeaway = el.dataset.takeaway ?? '';
+    if (!title && !body) return;
+    tipTitle.textContent = title;
+    tipBody.textContent = body;
+    tipTakeaway.textContent = takeaway;
+    tip.classList.remove('hidden');
+    tip.setAttribute('aria-hidden', 'false');
+    positionTip(el);
+  };
+
+  const openDrawer = (el: HTMLElement) => {
+    if (!drawer || !drawerTitle || !drawerBody || !drawerTakeaway) return;
+    drawerTitle.textContent = el.dataset.explainerTitle ?? '';
+    drawerBody.textContent = el.dataset.explainerBody ?? '';
+    drawerTakeaway.textContent = el.dataset.takeaway ?? '';
+    drawer.classList.remove('hidden');
+    drawer.setAttribute('aria-hidden', 'false');
+    backdrop?.classList.remove('hidden');
+    backdrop?.setAttribute('aria-hidden', 'false');
+  };
+
+  const closeDrawer = () => {
+    drawer?.classList.add('hidden');
+    drawer?.setAttribute('aria-hidden', 'true');
+    backdrop?.classList.add('hidden');
+    backdrop?.setAttribute('aria-hidden', 'true');
+  };
+
+  drawerClose?.addEventListener('click', closeDrawer);
+  backdrop?.addEventListener('click', closeDrawer);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeDrawer();
+  });
+
+  document.addEventListener('mouseover', (event) => {
+    const el = (event.target as HTMLElement).closest<HTMLElement>('[data-metric-tile]');
+    if (!el || drawer?.getAttribute('aria-hidden') === 'false') return;
+    hideTip();
+    active = el;
+    timer = setTimeout(() => {
+      if (active === el) showTip(el);
+    }, HOVER_MS);
+  });
+
+  document.addEventListener('focusin', (event) => {
+    const el = (event.target as HTMLElement).closest<HTMLElement>('[data-metric-tile]');
+    if (!el) return;
+    hideTip();
+    active = el;
+    showTip(el);
+  });
+
+  document.addEventListener('mouseout', (event) => {
+    const from = (event.target as HTMLElement).closest('[data-metric-tile]');
+    const to = (event.relatedTarget as HTMLElement | null)?.closest?.('[data-metric-tile]');
+    if (from && from !== to) hideTip();
+  });
+
+  document.addEventListener('focusout', hideTip);
+
+  document.addEventListener('click', (event) => {
+    const el = (event.target as HTMLElement).closest<HTMLElement>('[data-metric-tile]');
+    if (!el) return;
+    event.preventDefault();
+    hideTip();
+    openDrawer(el);
+  });
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (active && tip && !tip.classList.contains('hidden')) positionTip(active);
+    },
+    { passive: true },
+  );
+</script>
