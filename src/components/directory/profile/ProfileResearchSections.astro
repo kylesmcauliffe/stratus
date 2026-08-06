@@ -1,0 +1,223 @@
+---
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import {
+  getPublicProfile,
+  publicProfileSources,
+  publicProfilesGeneratedAt,
+} from '@/data/hospital-public-profile';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+}
+
+const { hospital, record } = Astro.props;
+const profile = getPublicProfile(hospital);
+const g = profile?.general;
+const c = profile?.costReport;
+
+function formatNumber(value: string | null | undefined): string | null {
+  if (!value?.trim()) return null;
+  const n = Number(value.replace(/,/g, ''));
+  if (Number.isNaN(n)) return value;
+  return n.toLocaleString('en-US');
+}
+
+const scaleFacts = [
+  { label: 'Licensed beds', value: formatNumber(c?.numberOfBeds) },
+  { label: 'Total discharges (FY)', value: formatNumber(c?.totalDischarges) },
+  { label: 'FTE employees', value: formatNumber(c?.fteEmployees) },
+  { label: 'Rural / urban', value: c?.ruralUrban ?? null },
+  { label: 'Cost report FY end', value: c?.fiscalYearEnd ?? null },
+].filter((f) => f.value);
+
+const qualityFacts = [
+  { label: 'Overall star rating', value: g?.overallRating ? `${g.overallRating} / 5` : null },
+  { label: 'Readmissions (worse vs peers)', value: g?.readmMeasuresWorse ?? null },
+  { label: 'Readmissions (better vs peers)', value: g?.readmMeasuresBetter ?? null },
+  { label: 'Safety (better vs peers)', value: g?.safetyMeasuresBetter ?? null },
+].filter((f) => f.value);
+
+const orgFacts = [
+  { label: 'Hospital type', value: g?.hospitalType },
+  { label: 'Ownership', value: g?.ownership },
+  { label: 'Emergency department', value: g?.emergencyServices },
+  { label: 'Birthing-friendly designation', value: g?.birthingFriendly === 'Y' ? 'Yes' : g?.birthingFriendly },
+].filter((f) => f.value);
+
+const hasMarket =
+  record?.population != null ||
+  record?.medianIncome != null ||
+  (g?.county && g?.state);
+const countyLabel = g?.county && g?.state ? `${g.county} County, ${g.state}` : null;
+---
+
+<section aria-labelledby="research-heading">
+  <h2 id="research-heading" class="text-brand-blue mb-2 text-xl font-bold">Research brief</h2>
+  {
+    !profile ? (
+      <p class="text-brand-gray-600 rounded-card border-brand-gray-200 border border-dashed bg-white px-5 py-4 text-sm">
+        No CMS Hospital Compare match for this CCN yet. Run{' '}
+        <code class="text-xs">npm run fetch:public-data</code> after{' '}
+        <code class="text-xs">npm run enrich:hospitals</code>.
+      </p>
+    ) : (
+      <>
+        <p class="text-brand-gray-500 mb-4 text-xs">
+          Public data from Medicare Hospital Compare &amp; cost reports
+          {publicProfilesGeneratedAt ? ` · updated ${publicProfilesGeneratedAt}` : ''}.
+        </p>
+        <div class="space-y-4">
+          {
+            g && (
+              <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card">
+                <h3 class="text-brand-gray-900 mb-3 text-sm font-bold">Location &amp; contact</h3>
+                <dl class="text-brand-gray-700 grid gap-2 text-sm sm:grid-cols-2">
+                  <div class="sm:col-span-2">
+                    <dt class="font-semibold">Street address</dt>
+                    <dd>{g.address}</dd>
+                  </div>
+                  <div>
+                    <dt class="font-semibold">City</dt>
+                    <dd>
+                      {g.city}, {g.state} {g.zip}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="font-semibold">County</dt>
+                    <dd>{g.county}</dd>
+                  </div>
+                  <div>
+                    <dt class="font-semibold">Phone</dt>
+                    <dd>{g.phone}</dd>
+                  </div>
+                  {c?.medicareCbsaNumber && (
+                    <div>
+                      <dt class="font-semibold">Medicare CBSA code</dt>
+                      <dd class="font-mono">{c.medicareCbsaNumber}</dd>
+                    </div>
+                  )}
+                </dl>
+              </article>
+            )
+          }
+
+          {
+            scaleFacts.length > 0 && (
+              <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card">
+                <h3 class="text-brand-gray-900 mb-3 text-sm font-bold">Scale &amp; capacity</h3>
+                <dl class="text-brand-gray-700 grid gap-2 text-sm sm:grid-cols-2">
+                  {scaleFacts.map((f) => (
+                    <div>
+                      <dt class="font-semibold">{f.label}</dt>
+                      <dd>{f.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            )
+          }
+
+          {
+            qualityFacts.length > 0 && (
+              <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card">
+                <h3 class="text-brand-gray-900 mb-3 text-sm font-bold">Quality snapshot (CMS)</h3>
+                <dl class="text-brand-gray-700 grid gap-2 text-sm sm:grid-cols-2">
+                  {qualityFacts.map((f) => (
+                    <div>
+                      <dt class="font-semibold">{f.label}</dt>
+                      <dd>{f.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            )
+          }
+
+          {
+            orgFacts.length > 0 && (
+              <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card">
+                <h3 class="text-brand-gray-900 mb-3 text-sm font-bold">Organization</h3>
+                <dl class="text-brand-gray-700 grid gap-2 text-sm sm:grid-cols-2">
+                  {orgFacts.map((f) => (
+                    <div>
+                      <dt class="font-semibold">{f.label}</dt>
+                      <dd>{f.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            )
+          }
+
+          {
+            hasMarket && (
+              <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card">
+                <h3 class="text-brand-gray-900 mb-3 text-sm font-bold">Market context</h3>
+                <p class="text-brand-gray-500 mb-3 text-xs">
+                  U.S. Census ACS 5-year estimates for the hospital county (when available).
+                </p>
+                <dl class="text-brand-gray-700 grid gap-2 text-sm sm:grid-cols-2">
+                  {
+                    countyLabel && (
+                      <div class="sm:col-span-2">
+                        <dt class="font-semibold">County</dt>
+                        <dd>{countyLabel}</dd>
+                      </div>
+                    )
+                  }
+                  {
+                    record?.population != null && (
+                      <div>
+                        <dt class="font-semibold">County population</dt>
+                        <dd>{record.population.toLocaleString('en-US')}</dd>
+                      </div>
+                    )
+                  }
+                  {
+                    record?.medianIncome != null && (
+                      <div>
+                        <dt class="font-semibold">Median household income</dt>
+                        <dd>${record.medianIncome.toLocaleString('en-US')}</dd>
+                      </div>
+                    )
+                  }
+                  {
+                    record?.population == null && record?.medianIncome == null && countyLabel && (
+                      <div class="sm:col-span-2">
+                        <p class="text-brand-gray-600 text-sm">
+                          County demographics not loaded. Set <code class="text-xs">CENSUS_API_KEY</code> and run{' '}
+                          <code class="text-xs">npm run fetch:county-demographics</code>.
+                        </p>
+                      </div>
+                    )
+                  }
+                </dl>
+              </article>
+            )
+          }
+
+          <article class="rounded-card border-brand-gray-200 border border-dashed bg-white p-5">
+            <h3 class="text-brand-gray-900 mb-2 text-sm font-bold">Finance</h3>
+            <p class="text-brand-gray-600 text-sm">
+              Form 990 / audited financials not in this build. Add ProPublica or cost-report margin fields when ready.
+            </p>
+          </article>
+        </div>
+        <details class="text-brand-gray-500 mt-4 text-xs">
+          <summary class="cursor-pointer font-semibold">Data sources</summary>
+          <ul class="mt-2 list-inside list-disc space-y-1">
+            {publicProfileSources.map((s) => (
+              <li>
+                <a href={s.url} class="text-brand-blue hover:underline" target="_blank" rel="noopener noreferrer">
+                  {s.id}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </>
+    )
+  }
+</section>

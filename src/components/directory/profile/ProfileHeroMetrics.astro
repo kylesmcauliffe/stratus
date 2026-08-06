@@ -1,0 +1,218 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { TeamHospital } from '@/data/team-hospitals';
+import { TEAM_MANDATED_HOSPITAL_COUNT } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { getPublicProfile } from '@/data/hospital-public-profile';
+import { stateProfilePath } from '@/lib/directory-links';
+import { buildProfileHeroChips } from '@/lib/profile-hero-chips';
+import { buildProfileHeroCategories, type HeroMetricCategory } from '@/lib/profile-hero-metrics';
+import { PROFILE_METRIC_TONE_CLASS } from '@/lib/profile-metric-tiles';
+import { metricValueClass } from '@/lib/value-tone';
+import ProfileHeroMetricViz from '@/components/directory/profile/ProfileHeroMetricViz.astro';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+}
+
+const { hospital, record } = Astro.props;
+const { categories, summary } = buildProfileHeroCategories({
+  hospital,
+  record,
+  publicProfile: getPublicProfile(hospital),
+});
+const defaultCategory: HeroMetricCategory = 'quality';
+const cjrRank = record?.teamRankByCjr;
+const cjrPct =
+  cjrRank != null
+    ? Math.round(((TEAM_MANDATED_HOSPITAL_COUNT - cjrRank + 1) / TEAM_MANDATED_HOSPITAL_COUNT) * 100)
+    : null;
+const categoryIds = categories.map((c) => c.id);
+const chips = buildProfileHeroChips(hospital, record);
+const chipClass =
+  'profile-hero-metrics__chip inline-flex items-center rounded-md border border-white/20 bg-white/5 px-2 py-1 text-[0.65rem] font-semibold text-white/85';
+---
+
+<div class="profile-hero-metrics min-w-0" data-profile-hero-metrics data-category-ids={JSON.stringify(categoryIds)}>
+  <div class="profile-hero-metrics__toolbar mb-2 flex flex-wrap items-center gap-1">
+    <div class="flex flex-wrap items-center gap-1" role="tablist" aria-label="Metric categories">
+      {
+        categories.map((cat) => (
+          <button
+            type="button"
+            role="tab"
+            class="profile-hero-metrics__tab inline-flex items-center gap-1 rounded-md border border-white/20 bg-white/5 px-2.5 py-1.5 text-xs font-bold text-white/80 transition-colors hover:bg-white/15"
+            data-hero-category={cat.id}
+            aria-selected={cat.id === defaultCategory ? 'true' : 'false'}
+          >
+            <Icon name={cat.icon} class="size-3.5 opacity-90" aria-hidden="true" />
+            {cat.label}
+          </button>
+        ))
+      }
+    </div>
+    {
+      chips.length > 0 && (
+        <>
+          <span class="profile-hero-metrics__toolbar-divider mx-0.5 hidden h-5 w-px bg-white/25 sm:block" aria-hidden="true" />
+          <div class="flex flex-wrap items-center gap-1" aria-label="Hospital attributes">
+            {
+              chips.map((chip) =>
+                chip.href ? (
+                  <a href={chip.href} class:list={[chipClass, 'dir-entity-link hover:bg-white/15']}>
+                    {chip.label}
+                  </a>
+                ) : (
+                  <span class={chipClass}>{chip.label}</span>
+                ),
+              )
+            }
+          </div>
+        </>
+      )
+    }
+  </div>
+
+  <div class="grid gap-2 xl:grid-cols-[minmax(0,1fr)_11.5rem]">
+    <div class="min-w-0">
+      {
+        categories.map((cat) => (
+          <div
+            class:list={['profile-hero-metrics__panel', cat.id !== defaultCategory && 'hidden']}
+            data-hero-panel={cat.id}
+            role="tabpanel"
+            hidden={cat.id !== defaultCategory}
+          >
+            <p class="mb-1.5 text-[0.6rem] font-semibold tracking-wide text-white/50 uppercase">
+              {cat.label} · hover tiles for context · {cat.tiles.length} metrics
+            </p>
+            <dl class="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {
+                cat.tiles.map((t) => (
+                  <div
+                    class:list={[
+                      PROFILE_METRIC_TONE_CLASS[t.tone],
+                      'profile-hero-metric profile-hero-metric--lg flex min-h-[5.25rem] flex-col justify-between rounded-lg border px-2.5 py-2',
+                    ]}
+                    data-metric-tile
+                    tabindex="0"
+                    data-explainer-title={t.explainerTitle}
+                    data-explainer-body={t.explainerBody}
+                    data-takeaway={t.takeaway}
+                  >
+                    <div class="flex items-start justify-between gap-1">
+                      <dt class="flex items-center gap-1 text-[0.6rem] font-bold uppercase leading-tight opacity-90">
+                        <Icon name={t.icon} class="size-3 shrink-0 opacity-80" aria-hidden="true" />
+                        <span class="line-clamp-2">{t.label}</span>
+                      </dt>
+                      <ProfileHeroMetricViz viz={t.viz} tone={t.tone} />
+                    </div>
+                    <div>
+                      <dd
+                        class:list={[
+                          'text-base font-bold leading-tight tabular-nums md:text-lg',
+                          metricValueClass(t.value, { invertYesNo: t.id === 'hacrp' }),
+                        ]}
+                      >
+                        {t.value}
+                      </dd>
+                      {t.sub && (
+                        <dd class="mt-0.5 text-[0.6rem] leading-snug opacity-85 line-clamp-3">{t.sub}</dd>
+                      )}
+                    </div>
+                  </div>
+                ))
+              }
+            </dl>
+          </div>
+        ))
+      }
+    </div>
+
+    <aside
+      class="flex flex-col justify-center rounded-lg border border-white/25 bg-white/10 px-3 py-2.5 text-sm leading-snug"
+      aria-label="At a glance"
+    >
+      <p class="text-[0.65rem] font-bold uppercase text-white/75">Glance</p>
+      {
+        cjrRank != null && cjrPct != null && (
+          <p class="my-1 tabular-nums">
+            <span class="text-xl font-bold">#{cjrRank}</span>
+            <span class="text-white/75"> / {TEAM_MANDATED_HOSPITAL_COUNT}</span>
+            <span class="mt-0.5 block text-[0.65rem] text-white/70">Top {cjrPct}% · CJR</span>
+          </p>
+        )
+      }
+      <p class="text-white/95">{summary.headline}</p>
+      <p class="mt-1 text-[0.65rem] text-white/70">
+        {summary.goodCount} favorable · {summary.warnCount} watch vs{' '}
+        <a href={stateProfilePath(hospital.state)} class="dir-entity-link font-semibold">
+          {hospital.state}
+        </a>
+      </p>
+    </aside>
+  </div>
+</div>
+
+<script>
+  const VALID = /^[a-z]+$/;
+
+  function initHeroMetrics() {
+    document.querySelectorAll('[data-profile-hero-metrics]').forEach((root) => {
+      const tabs = root.querySelectorAll<HTMLButtonElement>('[data-hero-category]');
+      const panels = root.querySelectorAll<HTMLElement>('[data-hero-panel]');
+      let ids: string[] = [];
+      try {
+        ids = JSON.parse(root.getAttribute('data-category-ids') ?? '[]');
+      } catch {
+        ids = [];
+      }
+
+      const showCategory = (id: string, syncProfileTab: boolean) => {
+        if (!ids.includes(id)) return;
+        tabs.forEach((btn) => {
+          const on = btn.dataset.heroCategory === id;
+          btn.setAttribute('aria-selected', on ? 'true' : 'false');
+          btn.classList.toggle('profile-hero-metrics__tab--active', on);
+          btn.classList.toggle('bg-white/20', on);
+          btn.classList.toggle('text-white', on);
+          btn.classList.toggle('border-white/40', on);
+        });
+        panels.forEach((panel) => {
+          const on = panel.dataset.heroPanel === id;
+          panel.classList.toggle('hidden', !on);
+          panel.hidden = !on;
+        });
+        if (syncProfileTab) {
+          document.dispatchEvent(new CustomEvent('profile-tabs:activate', { detail: { id } }));
+        }
+      };
+
+      tabs.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.heroCategory;
+          if (id) showCategory(id, true);
+        });
+      });
+
+      document.addEventListener('profile-tabs:activate', (event) => {
+        const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+        if (id && ids.includes(id)) showCategory(id, false);
+      });
+
+      document.querySelectorAll<HTMLButtonElement>('[data-profile-goto-tab]').forEach((el) => {
+        el.addEventListener('click', () => {
+          const id = el.dataset.profileGotoTab;
+          if (id && ids.includes(id)) showCategory(id, true);
+        });
+      });
+
+      const hash = window.location.hash.replace(/^#/, '');
+      const initial = VALID.test(hash) && ids.includes(hash) ? hash : 'quality';
+      showCategory(initial, false);
+    });
+  }
+
+  initHeroMetrics();
+</script>
