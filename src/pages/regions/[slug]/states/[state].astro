@@ -1,0 +1,118 @@
+---
+import DirectoryLayout from '@/layouts/DirectoryLayout.astro';
+import CollapsibleHospitalList from '@/components/directory/CollapsibleHospitalList.astro';
+import DirectoryHospitalTable from '@/components/directory/DirectoryHospitalTable.astro';
+import RegionStateNav from '@/components/directory/RegionStateNav.astro';
+import StateProfilePanels from '@/components/directory/StateProfilePanels.astro';
+import { getStateSummary } from '@/lib/directory-index';
+import { buildStateMapEntries } from '@/lib/state-map-data';
+import {
+  directoryFilterRegionUrl,
+  directoryFilterStateUrl,
+  normalizeStateCode,
+  regionProfilePath,
+  stateProfilePath,
+} from '@/lib/directory-links';
+import { directoryRegions, getRegionBySlug } from '@/lib/region-rollups';
+import { rollupHospitals } from '@/lib/system-rollups';
+
+export function getStaticPaths() {
+  return directoryRegions().flatMap((r) => {
+    const region = getRegionBySlug(r.slug);
+    if (!region) return [];
+    const states = [...new Set(region.hospitals.map((h) => h.state))];
+    return states.map((state) => ({ params: { slug: r.slug, state } }));
+  });
+}
+
+const { slug, state: stateParam } = Astro.params;
+const region = getRegionBySlug(slug!);
+
+if (!region) {
+  return Astro.redirect('/states#regions');
+}
+
+const state = normalizeStateCode(stateParam!);
+
+const { name, hospitals: regionHospitals } = region;
+const hospitals = regionHospitals.filter((h) => h.state === state);
+
+if (!hospitals.length) {
+  return Astro.redirect(regionProfilePath(slug!));
+}
+
+const rollup = rollupHospitals(hospitals);
+const sorted = [...hospitals].sort((a, b) => {
+  const ar = a.teamRankByCjr ?? 9999;
+  const br = b.teamRankByCjr ?? 9999;
+  if (ar !== br) return ar - br;
+  return a.name.localeCompare(b.name);
+});
+
+const filterHref = directoryFilterStateUrl(state, { region: name });
+const stateSummary = getStateSummary(state);
+const stateMapRows = buildStateMapEntries();
+const title = `${state} · ${name}`;
+const description = `${hospitals.length} TEAM hospitals in ${state} (${name} region).`;
+---
+
+<DirectoryLayout title={title} description={description}>
+  <div class="site-container py-3 md:py-4">
+    <nav class="text-brand-gray-600 mb-2 text-xs">
+      <a href="/" class="text-brand-blue hover:underline">Directory</a>
+      <span aria-hidden="true"> / </span>
+      <a href="/states#regions" class="text-brand-blue hover:underline">Regions</a>
+      <span aria-hidden="true"> / </span>
+      <a href={regionProfilePath(slug!)} class="text-brand-blue hover:underline">{name}</a>
+      <span aria-hidden="true"> / </span>
+      <span>{state}</span>
+    </nav>
+
+    <div class="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-brand-gray-200 pb-2">
+      <div>
+        <h1 class="text-brand-blue text-xl font-bold tracking-tight md:text-2xl">
+          {state}
+          <span class="text-brand-gray-500 font-semibold"> · {name}</span>
+        </h1>
+        <p class="text-brand-gray-700 text-xs">{description}</p>
+        <p class="text-brand-gray-600 mt-0.5 text-[0.65rem]">
+          <a href={stateProfilePath(state)} class="text-brand-blue hover:underline">Full {state} state profile</a>
+          {' · '}
+          <a href={directoryFilterRegionUrl(name)} class="text-brand-blue hover:underline">All {name}</a>
+        </p>
+      </div>
+      <a
+        href={filterHref}
+        class="text-brand-blue border-brand-gray-200 hover:bg-brand-sky shrink-0 rounded-button border bg-white px-3 py-1.5 text-xs font-semibold"
+      >
+        Filter directory →
+      </a>
+    </div>
+
+    <div class="grid gap-2 lg:grid-cols-[minmax(9rem,11rem)_minmax(0,1fr)] lg:items-start">
+      <RegionStateNav
+        regionName={name}
+        regionSlug={slug!}
+        activeState={state}
+        hospitals={regionHospitals}
+      />
+      <div class="min-w-0">
+        {
+          stateSummary && (
+            <StateProfilePanels
+              state={state}
+              summary={stateSummary}
+              rollup={rollup}
+              hospitals={hospitals}
+              stateMapRows={stateMapRows}
+              peerLabel="region median"
+            />
+          )
+        }
+        <CollapsibleHospitalList count={sorted.length}>
+          <DirectoryHospitalTable hospitals={sorted} />
+        </CollapsibleHospitalList>
+      </div>
+    </div>
+  </div>
+</DirectoryLayout>

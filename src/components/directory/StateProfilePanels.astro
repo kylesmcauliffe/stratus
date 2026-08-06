@@ -1,0 +1,113 @@
+---
+import type { StateSummary } from '@/lib/directory-index';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import type { SystemRollup } from '@/lib/system-rollups';
+import type { StateMapEntry } from '@/components/TeamStateMap.astro';
+import StateSummaryBar from '@/components/directory/StateSummaryBar.astro';
+import StateVsNationalStrip from '@/components/directory/StateVsNationalStrip.astro';
+import RollupMetricStrip from '@/components/directory/RollupMetricStrip.astro';
+import { directoryHospitals } from '@/lib/directory-index';
+import { buildNationalSnapshotMetrics } from '@/lib/cohort-snapshot';
+import { teamHospitals } from '@/data/team-hospitals';
+import MetricDistributionChart from '@/components/directory/MetricDistributionChart.astro';
+import PipelineFunnel from '@/components/directory/PipelineFunnel.astro';
+import TeamStateMap from '@/components/TeamStateMap.astro';
+import {
+  cjrRankDistribution,
+  formatCjrMedian,
+  formatStarsMedian,
+  starsDistribution,
+} from '@/lib/metric-distribution';
+import {
+  orderPipelineBreakdown,
+  orderSalesStageBreakdown,
+} from '@/data/pipeline-stage-order';
+
+interface Props {
+  state: string;
+  summary: StateSummary;
+  rollup: SystemRollup;
+  hospitals: DirectoryHospital[];
+  stateMapRows: StateMapEntry[];
+  peerLabel?: string;
+}
+
+const { state, summary, rollup, hospitals, stateMapRows, peerLabel = 'national TEAM median' } =
+  Astro.props;
+
+const showDistributions = hospitals.length > 0;
+const cjrDist = showDistributions ? cjrRankDistribution(hospitals) : null;
+const starsDist = showDistributions ? starsDistribution(hospitals) : null;
+const pipelineRows = orderPipelineBreakdown(rollup.pipelineBreakdown);
+const stageRows = orderSalesStageBreakdown(rollup.salesStageBreakdown);
+const hasPipeline = pipelineRows.some((r) => r.count > 0) || pipelineRows.length > 0;
+const hasStage = stageRows.some((r) => r.count > 0) || stageRows.length > 0;
+
+const nationalSnapshot = buildNationalSnapshotMetrics(
+  directoryHospitals,
+  teamHospitals.length,
+);
+---
+
+<div class="state-profile-panels mb-2 grid gap-2 lg:grid-cols-3 lg:items-start">
+  <div
+    class="border-brand-gray-200 min-w-0 rounded-card border bg-brand-gray-50/60 p-2 lg:sticky lg:top-14 lg:self-start"
+  >
+    <h2 class="text-brand-blue mb-1 text-xs font-bold">National context</h2>
+    <p class="text-brand-gray-500 mb-1.5 text-[0.65rem]">
+      {state} highlighted · click another state for its profile
+    </p>
+    <div class="mb-1.5">
+      <StateSummaryBar
+        national={nationalSnapshot}
+        initialInFilter={nationalSnapshot.rosterCount}
+      />
+    </div>
+    <TeamStateMap states={stateMapRows} compact emphasisState={state} linkMode="profile" />
+  </div>
+
+  <div class="state-profile-charts flex min-w-0 flex-col gap-1.5">
+    {
+      showDistributions && cjrDist && starsDist && (
+        <div class="grid gap-2 sm:grid-cols-2">
+          <MetricDistributionChart
+            distribution={cjrDist}
+            medianLabel={formatCjrMedian(cjrDist.median)}
+          />
+          <MetricDistributionChart
+            distribution={starsDist}
+            medianLabel={formatStarsMedian(starsDist.median)}
+          />
+        </div>
+      )
+    }
+    {
+      (hasPipeline || hasStage) && (
+        <div class="border-brand-gray-200 rounded-md border bg-white px-2 py-1.5">
+          {
+            hasPipeline && (
+              <PipelineFunnel title="Rainfall pipeline" rows={pipelineRows} id="state-pipeline-funnel" />
+            )
+          }
+          {
+            hasStage && (
+              <div class:list={[hasPipeline && 'border-brand-gray-200 border-t pt-1.5 mt-1.5']}>
+                <PipelineFunnel title="Sales stage" rows={stageRows} id="state-stage-funnel" />
+              </div>
+            )
+          }
+        </div>
+      )
+    }
+    {
+      hospitals.length === 0 && !(hasPipeline || hasStage) && (
+        <p class="text-brand-gray-500 text-[0.65rem]">No hospitals in this cohort.</p>
+      )
+    }
+  </div>
+
+  <div class="state-profile-medians flex min-w-0 flex-col gap-1.5">
+    <StateVsNationalStrip state={state} summary={summary} compact />
+    <RollupMetricStrip rollup={rollup} peerLabel={peerLabel} compact />
+  </div>
+</div>
