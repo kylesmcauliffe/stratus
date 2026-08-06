@@ -1,0 +1,89 @@
+---
+import type { NationalSnapshotMetrics } from '@/lib/cohort-snapshot';
+
+interface Props {
+  national: NationalSnapshotMetrics;
+  initialInFilter: number;
+}
+
+const { national, initialInFilter } = Astro.props;
+const fmtBeds =
+  national.medianBeds != null ? national.medianBeds.toLocaleString('en-US') : '—';
+const fmtCjr =
+  national.medianTeamRankCjr != null
+    ? `#${Math.round(national.medianTeamRankCjr)}`
+    : '—';
+const fmtMspb =
+  national.medianMspb != null ? national.medianMspb.toFixed(2) : '—';
+const fmtStars =
+  national.medianStars != null ? String(national.medianStars) : '—';
+---
+
+<div
+  id="state-summary-bar"
+  class="border-brand-blue/25 bg-brand-sky/35 rounded border px-2 py-1.5"
+>
+  <div class="mb-1 flex flex-wrap items-center gap-2">
+    <p id="state-summary-title" class="text-brand-blue text-[0.65rem] font-bold tracking-wide uppercase">
+      National snapshot
+    </p>
+    <a
+      id="state-summary-profile-link"
+      href="/states"
+      class="dir-entity-link text-[0.65rem] font-semibold hover:underline"
+      hidden
+    >
+      State profile →
+    </a>
+  </div>
+  <dl class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[0.6rem] sm:grid-cols-4">
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">In filter</dt>
+      <dd id="state-summary-match-count" class="text-brand-gray-900 font-bold tabular-nums">
+        {initialInFilter}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">On roster</dt>
+      <dd id="state-summary-roster-count" class="text-brand-gray-900 font-bold tabular-nums">
+        {national.rosterCount}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">Median stars</dt>
+      <dd id="state-summary-median-stars" class="text-brand-gray-900 font-bold tabular-nums">
+        {fmtStars}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">% rural</dt>
+      <dd id="state-summary-pct-rural" class="text-brand-gray-900 font-bold tabular-nums">
+        {national.pctRural}%
+      </dd>
+    </div>
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">Median CJR</dt>
+      <dd id="state-summary-median-cjr" class="text-brand-gray-900 font-bold tabular-nums">
+        {fmtCjr}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">% outreach</dt>
+      <dd id="state-summary-pct-outreach" class="text-brand-gray-900 font-bold tabular-nums">
+        {national.pctOutreachYes}%
+      </dd>
+    </div>
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">Median MSPB</dt>
+      <dd id="state-summary-median-mspb" class="text-brand-gray-900 font-bold tabular-nums">
+        {fmtMspb}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-brand-gray-600 font-semibold">Median beds</dt>
+      <dd id="state-summary-median-beds" class="text-brand-gray-900 font-bold tabular-nums">
+        {fmtBeds}
+      </dd>
+    </div>
+  </dl>
+</div>

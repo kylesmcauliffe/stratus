@@ -1,0 +1,104 @@
+---
+/** Site-wide hover tooltips for metric tiles (rollup, state, profile). */
+---
+
+<div
+  id="directory-metric-tip"
+  class="profile-metric-tip pointer-events-none hidden"
+  role="tooltip"
+  aria-hidden="true"
+>
+  <p id="directory-metric-tip-title" class="profile-metric-tip__title"></p>
+  <p id="directory-metric-tip-body" class="profile-metric-tip__body"></p>
+  <p id="directory-metric-tip-takeaway" class="profile-metric-tip__takeaway"></p>
+</div>
+
+<script>
+  const HOVER_MS = 200;
+  const FOCUS_MS = 0;
+  /** Profile pages use ProfileMetricTooltips for [data-metric-tile] (hover + click drawer). */
+  const SELECTOR = '[data-metric-tip], [data-rollup-tip]';
+
+  function initDirectoryMetricTooltips() {
+    const tip = document.getElementById('directory-metric-tip');
+    const tipTitle = document.getElementById('directory-metric-tip-title');
+    const tipBody = document.getElementById('directory-metric-tip-body');
+    const tipTakeaway = document.getElementById('directory-metric-tip-takeaway');
+    if (!tip || !tipTitle || !tipBody || !tipTakeaway) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let active: HTMLElement | null = null;
+    const bound = new WeakSet<HTMLElement>();
+
+    const hide = () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      active = null;
+      tip.classList.add('hidden');
+      tip.setAttribute('aria-hidden', 'true');
+    };
+
+    const position = (el: HTMLElement) => {
+      const rect = el.getBoundingClientRect();
+      const tipRect = tip.getBoundingClientRect();
+      let left = rect.left + rect.width / 2 - tipRect.width / 2;
+      let top = rect.bottom + 8;
+      left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+      if (top + tipRect.height > window.innerHeight - 8) {
+        top = rect.top - tipRect.height - 8;
+      }
+      tip.style.left = `${left}px`;
+      tip.style.top = `${top}px`;
+    };
+
+    const show = (el: HTMLElement) => {
+      const title = el.dataset.explainerTitle ?? '';
+      const body = el.dataset.explainerBody ?? '';
+      if (!title && !body) return;
+      tipTitle.textContent = title;
+      tipBody.textContent = body;
+      tipTakeaway.textContent = el.dataset.takeaway ?? '';
+      tipTakeaway.hidden = !el.dataset.takeaway;
+      tip.classList.remove('hidden');
+      tip.setAttribute('aria-hidden', 'false');
+      position(el);
+    };
+
+    const bind = (el: HTMLElement) => {
+      if (bound.has(el)) return;
+      bound.add(el);
+      el.addEventListener('mouseenter', () => {
+        hide();
+        active = el;
+        timer = setTimeout(() => {
+          if (active === el) show(el);
+        }, HOVER_MS);
+      });
+      el.addEventListener('focus', () => {
+        hide();
+        active = el;
+        timer = setTimeout(() => {
+          if (active === el) show(el);
+        }, FOCUS_MS);
+      });
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('blur', hide);
+    };
+
+    document.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => {
+      if (el.closest('.profile-page')) return;
+      bind(el);
+    });
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (active && !tip.classList.contains('hidden')) position(active);
+      },
+      { passive: true },
+    );
+  }
+
+  initDirectoryMetricTooltips();
+  document.addEventListener('astro:page-load', initDirectoryMetricTooltips);
+</script>

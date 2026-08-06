@@ -1,0 +1,121 @@
+---
+import type { HeroMetricViz } from '@/lib/profile-hero-metrics';
+import type { CompareTone } from '@/lib/research-benchmarks';
+
+interface Props {
+  viz: HeroMetricViz;
+  tone: CompareTone;
+}
+
+const { viz, tone } = Astro.props;
+
+const toneStroke: Record<CompareTone, string> = {
+  good: 'text-emerald-300',
+  warn: 'text-amber-300',
+  neutral: 'text-white/50',
+};
+
+const size = 44;
+const r = 17;
+const c = 2 * Math.PI * r;
+
+let pieGradient = '';
+if (viz.type === 'pie') {
+  const colors = ['#34d399', '#38bdf8', '#fbbf24', '#a78bfa'];
+  const total = viz.values.reduce((a, b) => a + b, 0) || 1;
+  let acc = 0;
+  const stops: string[] = [];
+  for (let i = 0; i < viz.values.length; i++) {
+    const pct = (viz.values[i]! / total) * 100;
+    const start = acc;
+    acc += pct;
+    stops.push(`${colors[i]} ${start}% ${acc}%`);
+  }
+  pieGradient = stops.join(', ');
+}
+---
+
+{
+  viz.type === 'ring' && (
+    <svg width={size} height={size} class:list={['shrink-0', toneStroke[tone]]} aria-hidden="true">
+      <circle cx="22" cy="22" r={r} fill="none" stroke="currentColor" stroke-opacity="0.2" stroke-width="5" />
+      <circle
+        cx="22"
+        cy="22"
+        r={r}
+        fill="none"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+        stroke-dasharray={c}
+        stroke-dashoffset={c * (1 - viz.pct / 100)}
+        transform="rotate(-90 22 22)"
+      />
+    </svg>
+  )
+}
+
+{
+  viz.type === 'rank' && (
+    <svg width={size} height={size} class:list={['shrink-0', toneStroke[tone]]} aria-hidden="true">
+      <circle cx="22" cy="22" r={r} fill="none" stroke="currentColor" stroke-opacity="0.2" stroke-width="5" />
+      <circle
+        cx="22"
+        cy="22"
+        r={r}
+        fill="none"
+        stroke="currentColor"
+        stroke-width="5"
+        stroke-linecap="round"
+        stroke-dasharray={c}
+        stroke-dashoffset={c * (1 - viz.pct / 100)}
+        transform="rotate(-90 22 22)"
+      />
+      <text x="22" y="24" text-anchor="middle" class="fill-white text-[0.5rem] font-bold" font-size="8">
+        {viz.pct}%
+      </text>
+    </svg>
+  )
+}
+
+{
+  viz.type === 'stars' && (
+    <div class="flex shrink-0 gap-0.5" aria-hidden="true">
+      {Array.from({ length: viz.max }, (_, i) => (
+        <span
+          class:list={[
+            'size-2.5 rounded-sm',
+            i < viz.filled ? 'bg-amber-300' : 'bg-white/15',
+          ]}
+        />
+      ))}
+    </div>
+  )
+}
+
+{
+  viz.type === 'bar' && (
+    <div class="w-11 shrink-0" aria-hidden="true">
+      <div class="h-1.5 overflow-hidden rounded-full bg-white/15">
+        <div
+          class:list={[
+            'h-full rounded-full',
+            tone === 'good' ? 'bg-emerald-400' : tone === 'warn' ? 'bg-amber-400' : 'bg-white/45',
+          ]}
+          style={`width: ${viz.pct}%`}
+        />
+      </div>
+    </div>
+  )
+}
+
+{
+  viz.type === 'pie' && pieGradient && (
+    <div
+      class="size-11 shrink-0 rounded-full ring-2 ring-white/20"
+      style={`background: conic-gradient(${pieGradient})`}
+      aria-hidden="true"
+      title="HVBP domain points (clinical, experience, safety, efficiency)"
+    />
+  )
+}

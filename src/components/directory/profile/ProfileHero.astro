@@ -1,0 +1,72 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { hospitalDisplayName } from '@/lib/team-hospital-links';
+import { careCompareSearchUrl } from '@/lib/cms-links';
+import { stateProfilePath } from '@/lib/directory-links';
+import { getPublicProfile } from '@/data/hospital-public-profile';
+import ProfileFacilityFacts from '@/components/directory/profile/ProfileFacilityFacts.astro';
+import ProfileHeroMetrics from '@/components/directory/profile/ProfileHeroMetrics.astro';
+import ProfileMetricTooltips from '@/components/directory/profile/ProfileMetricTooltips.astro';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+}
+
+const { hospital, record } = Astro.props;
+const publicProfile = getPublicProfile(hospital);
+const displayName = hospitalDisplayName(hospital.name);
+const careCompareUrl = hospital.ccn ? careCompareSearchUrl(hospital.ccn) : null;
+---
+
+<section class="bg-brand-navy text-white">
+  <div class="site-container py-3">
+    <a
+      href="/"
+      class="mb-2 inline-flex items-center gap-1 text-[0.65rem] font-semibold text-white/85 hover:text-white hover:underline"
+    >
+      <Icon name="ph:arrow-left" class="size-3" aria-hidden="true" />
+      Directory
+    </a>
+
+    <div class="grid gap-3 lg:grid-cols-[minmax(12rem,20rem)_minmax(0,1fr)] lg:items-start">
+      <div class="flex min-w-0 flex-col gap-1.5">
+        <p class="text-[0.6rem] font-semibold tracking-wide text-white/60 uppercase">CMS TEAM</p>
+        <h1 class="text-xl font-bold leading-tight md:text-2xl lg:text-3xl">{displayName}</h1>
+        <ProfileFacilityFacts
+          hospital={hospital}
+          record={record}
+          publicProfile={publicProfile}
+          variant="hero"
+          hideRoster
+        />
+        <p class="flex flex-wrap items-center gap-x-2 gap-y-0 text-xs text-white/85">
+          {hospital.city && <span>{hospital.city} metro,</span>}
+          <a href={stateProfilePath(hospital.state)} class="dir-entity-link font-semibold">
+            {hospital.state}
+          </a>
+          {hospital.ccn && <span class="font-mono text-white/65">CCN {hospital.ccn}</span>}
+        </p>
+        {
+          careCompareUrl && (
+            <a
+              href={careCompareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-0.5 text-xs font-semibold text-white/90 hover:underline"
+            >
+              Medicare.gov
+              <Icon name="ph:arrow-square-out" class="size-3.5" aria-hidden="true" />
+            </a>
+          )
+        }
+      </div>
+
+      <ProfileHeroMetrics hospital={hospital} record={record} />
+    </div>
+  </div>
+</section>
+
+<ProfileMetricTooltips />
