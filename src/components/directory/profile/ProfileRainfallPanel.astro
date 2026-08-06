@@ -1,0 +1,145 @@
+---
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { getRainfallTrackerByCcn } from '@/lib/rainfall-tracker';
+import ExplainerNote from '@/components/directory/profile/ExplainerNote.astro';
+import { TONE_SURFACE } from '@/lib/visual-indicators';
+import { metricValueClass, pickMetricTone } from '@/lib/value-tone';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+}
+
+const { hospital, record } = Astro.props;
+const tr = getRainfallTrackerByCcn(hospital.ccn) ?? (record?.ccn ? getRainfallTrackerByCcn(record.ccn) : undefined);
+
+function money(n: number | null | undefined) {
+  return n != null ? `$${n.toLocaleString('en-US')}` : '—';
+}
+---
+
+<section class="space-y-4" aria-label="Rainfall tracker">
+  {
+    !tr ? (
+      <p class="text-brand-gray-600 rounded-card border-brand-gray-200 border border-dashed bg-white px-4 py-4 text-sm">
+        No Master Tracker row for this CCN. Run <code class="text-xs">npm run import:rainfall-tracker</code>.
+      </p>
+    ) : (
+      <>
+        <ExplainerNote
+          title="What is TEAM Rank by CJR?"
+          body="Rainfall’s composite prioritization score across mandated hospitals (lower rank = higher priority in outreach). Use alongside CMS quality and pipeline stage — not a clinical quality measure."
+        />
+
+        <dl class="border-brand-gray-200 divide-brand-gray-200 rounded-card divide-y border bg-white shadow-card">
+          <div class="grid gap-3 px-5 py-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">TEAM rank (CJR)</dt>
+              <dd class="text-brand-gray-900 mt-1 text-2xl font-bold tabular-nums">
+                {tr.teamRankByCjr ?? '—'}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">CJR top 50</dt>
+              <dd
+                class:list={[
+                  'mt-1 inline-block rounded px-1.5 py-0.5 text-lg font-bold',
+                  TONE_SURFACE[pickMetricTone(tr.cjrTop50 ? 'Yes' : 'No')],
+                  metricValueClass(tr.cjrTop50 ? 'Yes' : 'No'),
+                ]}
+              >
+                {tr.cjrTop50 ? 'Yes' : 'No'}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">Region</dt>
+              <dd class="text-brand-gray-900 mt-1 font-medium">{tr.region ?? '—'}</dd>
+            </div>
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">Outreach</dt>
+              <dd
+                class:list={[
+                  'mt-1 inline-block rounded px-1.5 py-0.5 font-medium',
+                  tr.outreachStatus ? TONE_SURFACE[pickMetricTone(tr.outreachStatus)] : '',
+                  tr.outreachStatus ? metricValueClass(tr.outreachStatus) : 'text-brand-gray-900',
+                ]}
+              >
+                {tr.outreachStatus ?? '—'}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">Pipeline</dt>
+              <dd class="text-brand-gray-900 mt-1 font-medium">{tr.pipelineStatus ?? '—'}</dd>
+            </div>
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">Sales stage</dt>
+              <dd class="text-brand-gray-900 mt-1 font-medium">{tr.salesStage ?? '—'}</dd>
+            </div>
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">Leadership buy-in</dt>
+              <dd class="text-brand-gray-900 mt-1 font-medium">{tr.leadershipBuyIn ?? '—'}</dd>
+            </div>
+            <div>
+              <dt class="text-brand-gray-600 text-xs font-semibold uppercase">System sites</dt>
+              <dd class="text-brand-gray-900 mt-1 font-medium">{tr.systemSiteCount ?? '—'}</dd>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <dt class="text-brand-gray-600 mb-2 text-xs font-semibold uppercase">Commercial estimates</dt>
+            <dd class="text-brand-gray-700 grid gap-2 text-sm sm:grid-cols-2">
+              <span>ACV Track 1: <strong>{money(tr.acvTrack1)}</strong></span>
+              <span>ACV Track 2: <strong>{money(tr.acvTrack2)}</strong></span>
+              <span>Est. TCV: <strong>{money(tr.estTcv)}</strong></span>
+              <span>System impact: <strong>{money(tr.healthSystemImpact)}</strong></span>
+            </dd>
+          </div>
+          {
+            (tr.contactName || tr.nextSteps || (tr.additionalContacts?.length ?? 0) > 0) && (
+              <div class="px-5 py-4">
+                <dt class="text-brand-gray-600 mb-2 text-xs font-semibold uppercase">Contacts &amp; next steps</dt>
+                <dd class="text-brand-gray-700 space-y-3 text-sm">
+                  {
+                    tr.contactName && (
+                      <p>
+                        <strong>{tr.contactName}</strong>
+                        {tr.contactTitle ? ` · ${tr.contactTitle}` : ''}
+                        {tr.contactPhone ? ` · ${tr.contactPhone}` : ''}
+                        {tr.contactEmail ? (
+                          <>
+                            <br />
+                            <a href={`mailto:${tr.contactEmail}`} class="text-brand-blue hover:underline">
+                              {tr.contactEmail}
+                            </a>
+                          </>
+                        ) : null}
+                      </p>
+                    )
+                  }
+                  {
+                    tr.additionalContacts?.map((c) => (
+                      <p class="border-brand-gray-100 border-t pt-2">
+                        {c.name ? <strong>{c.name}</strong> : <span class="italic">Contact</span>}
+                        {c.title ? ` · ${c.title}` : ''}
+                        {c.phone ? ` · ${c.phone}` : ''}
+                        {c.email ? (
+                          <>
+                            <br />
+                            <a href={`mailto:${c.email}`} class="text-brand-blue hover:underline">
+                              {c.email}
+                            </a>
+                          </>
+                        ) : null}
+                      </p>
+                    ))
+                  }
+                  {tr.nextSteps && <p class="text-brand-gray-600 border-brand-gray-100 border-t pt-2">{tr.nextSteps}</p>}
+                </dd>
+              </div>
+            )
+          }
+        </dl>
+      </>
+    )
+  }
+</section>

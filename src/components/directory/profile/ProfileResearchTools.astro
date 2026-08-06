@@ -1,0 +1,159 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { hospitalDisplayName } from '@/lib/team-hospital-links';
+import { hospitalProfilePath } from '@/lib/hospital-slug';
+import {
+  directoryFilterStateUrl,
+  directoryFilterSystemUrl,
+  regionProfilePathFromName,
+  stateProfilePath,
+  systemProfilePathFromName,
+} from '@/lib/directory-links';
+import { statePeerLeague, systemPeerLeague } from '@/lib/profile-peer-league';
+import { cjrTone, starsTone, TONE_SURFACE } from '@/lib/visual-indicators';
+import { researchBenchmarks, stateBenchmarks } from '@/lib/research-benchmarks';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+  defaultOpen?: boolean;
+}
+
+const { hospital, record, defaultOpen = false } = Astro.props;
+const statePeers = statePeerLeague(hospital.state, hospital.slug, 8);
+const systemPeers =
+  hospital.healthSystem && record?.healthSystem
+    ? systemPeerLeague(hospital.healthSystem, hospital.slug, 8)
+    : [];
+
+const compareWithStateHref = `/compare?h=${encodeURIComponent(
+  [hospital.slug, ...statePeers.slice(0, 2).map((p) => p.slug)].join(','),
+)}`;
+
+const quickLinks = [
+  { label: `${hospital.state} roster`, href: directoryFilterStateUrl(hospital.state), icon: 'ph:map-pin' },
+  { label: 'State profile', href: stateProfilePath(hospital.state), icon: 'ph:chart-bar' },
+  ...(hospital.healthSystem
+    ? [
+        { label: 'System', href: systemProfilePathFromName(hospital.healthSystem), icon: 'ph:hospital' },
+        { label: 'Filter system', href: directoryFilterSystemUrl(hospital.healthSystem), icon: 'ph:funnel' },
+      ]
+    : []),
+  ...(record?.region
+    ? [
+        { label: record.region.length > 14 ? `${record.region.slice(0, 12)}…` : record.region, href: regionProfilePathFromName(record.region), icon: 'ph:compass' },
+      ]
+    : []),
+  { label: 'Compare peers', href: compareWithStateHref, icon: 'ph:columns' },
+];
+
+const bench = stateBenchmarks[hospital.state];
+const nat = researchBenchmarks;
+
+function peerRow(h: DirectoryHospital) {
+  const starT = starsTone(h.overallRating, bench?.medianStars ?? nat.medianStars);
+  const cjrT = cjrTone(h.teamRankByCjr ?? null, bench?.medianTeamRankCjr ?? nat.medianTeamRankCjr);
+  return { starT, cjrT };
+}
+---
+
+<details class="profile-research-tools border-brand-gray-200 rounded-md border bg-white" open={defaultOpen}>
+  <summary class="text-brand-blue cursor-pointer px-2 py-1 text-xs font-bold">
+    Research tools · {statePeers.length} state peers
+    {systemPeers.length > 0 ? ` · ${systemPeers.length} system` : ''}
+  </summary>
+
+  <div class="border-brand-gray-100 space-y-1.5 border-t px-2 py-1.5">
+    <div class="flex flex-wrap gap-1">
+      {
+        quickLinks.map((link) => (
+          <a href={link.href} class="dir-btn inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[0.6rem]">
+            <Icon name={link.icon} class="size-3" aria-hidden="true" />
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+
+    <div class:list={['grid gap-1.5', systemPeers.length > 0 ? 'lg:grid-cols-2' : 'grid-cols-1']}>
+      <div class="min-w-0 overflow-x-auto">
+        <p class="text-brand-gray-600 mb-0.5 text-[0.6rem] font-semibold">
+          <a href={stateProfilePath(hospital.state)} class="dir-entity-link">{hospital.state}</a> peers (CJR)
+        </p>
+        {
+          statePeers.length === 0 ? (
+            <p class="text-brand-gray-500 text-[0.6rem]">—</p>
+          ) : (
+            <table class="dir-table w-full text-left text-[0.6rem]">
+              <tbody>
+                {
+                  statePeers.map((h) => {
+                    const { starT, cjrT } = peerRow(h);
+                    return (
+                      <tr class="hover:bg-brand-sky/25">
+                        <td class="border-brand-gray-200 border px-1 py-0.5 max-w-[9rem]">
+                          <a href={hospitalProfilePath(h.slug)} class="text-brand-blue line-clamp-1 font-semibold hover:underline">
+                            {hospitalDisplayName(h.name)}
+                          </a>
+                        </td>
+                        <td class="border-brand-gray-200 border px-1 py-0.5">
+                          <span class:list={[TONE_SURFACE[cjrT], 'rounded px-0.5 font-bold tabular-nums']}>
+                            {h.teamRankByCjr != null ? `#${h.teamRankByCjr}` : '—'}
+                          </span>
+                        </td>
+                        <td class="border-brand-gray-200 border px-1 py-0.5">
+                          <span class:list={[TONE_SURFACE[starT], 'rounded px-0.5 tabular-nums font-semibold']}>
+                            {h.overallRating ?? '—'}
+                          </span>
+                        </td>
+                        <td class="border-brand-gray-200 border px-1 py-0.5">
+                          <a href={`/compare?h=${encodeURIComponent(`${hospital.slug},${h.slug}`)}`} class="text-brand-blue font-semibold">vs</a>
+                        </td>
+                      </tr>
+                    );
+                  })
+                }
+              </tbody>
+            </table>
+          )
+        }
+      </div>
+
+      {
+        systemPeers.length > 0 && hospital.healthSystem && (
+          <div class="min-w-0 overflow-x-auto">
+            <p class="text-brand-gray-600 mb-0.5 text-[0.6rem] font-semibold">System peers</p>
+            <table class="dir-table w-full text-left text-[0.6rem]">
+              <tbody>
+                {
+                  systemPeers.map((h) => {
+                    const { cjrT } = peerRow(h);
+                    return (
+                      <tr class="hover:bg-brand-sky/25">
+                        <td class="border-brand-gray-200 border px-1 py-0.5 max-w-[8rem]">
+                          <a href={hospitalProfilePath(h.slug)} class="text-brand-blue line-clamp-1 font-semibold hover:underline">
+                            {hospitalDisplayName(h.name)}
+                          </a>
+                        </td>
+                        <td class="border-brand-gray-200 border px-1 py-0.5">
+                          <span class:list={[TONE_SURFACE[cjrT], 'rounded px-0.5 font-bold tabular-nums']}>
+                            #{h.teamRankByCjr}
+                          </span>
+                        </td>
+                        <td class="border-brand-gray-200 border px-1 py-0.5">
+                          <a href={`/compare?h=${encodeURIComponent(`${hospital.slug},${h.slug}`)}`} class="text-brand-blue font-semibold">vs</a>
+                        </td>
+                      </tr>
+                    );
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</details>
