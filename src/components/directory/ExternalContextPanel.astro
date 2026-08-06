@@ -1,0 +1,164 @@
+---
+import type { ExternalContextEntry } from '@/lib/external-context';
+import { externalContextGeneratedAt, externalContextSource } from '@/lib/external-context';
+
+interface Props {
+  entry: ExternalContextEntry;
+  /** e.g. "Mayo Clinic" or hospital display name */
+  subjectLabel: string;
+  /** CMS beds for hospitals — show compare note when Wikidata differs */
+  cmsBeds?: number | null;
+  embedded?: boolean;
+  /** Profile Bio tab: full text, no duplicate Wikipedia promo in footer */
+  profileBio?: boolean;
+}
+
+const { entry, subjectLabel, cmsBeds, embedded = false, profileBio = false } = Astro.props;
+
+const summaryParagraphs = entry.summary
+  ? entry.summary.split(/\n+/).map((p) => p.trim()).filter(Boolean)
+  : [];
+
+const confidenceNote =
+  entry.confidence === 'low'
+    ? 'Possible Wikipedia match — verify before citing.'
+    : entry.confidence === 'medium'
+      ? 'Wikipedia match — cross-check with CMS roster.'
+      : null;
+
+const facts = [
+  entry.foundedYear != null
+    ? {
+        label: 'Founded',
+        value:
+          entry.ageYears != null
+            ? `${entry.foundedYear} (${entry.ageYears} years ago)`
+            : String(entry.foundedYear),
+      }
+    : null,
+  entry.wikidataBeds != null
+    ? {
+        label: 'Beds (Wikidata)',
+        value:
+          cmsBeds != null && Math.abs(entry.wikidataBeds - cmsBeds) > Math.max(50, cmsBeds * 0.15)
+            ? `${entry.wikidataBeds.toLocaleString('en-US')} (CMS cost report: ${cmsBeds.toLocaleString('en-US')})`
+            : entry.wikidataBeds.toLocaleString('en-US'),
+      }
+    : null,
+  entry.wikidataEmployees != null
+    ? {
+        label: 'Employees (Wikidata)',
+        value: entry.wikidataEmployees.toLocaleString('en-US'),
+      }
+    : null,
+  entry.website
+    ? {
+        label: 'Website',
+        value: entry.website.replace(/^https?:\/\//, '').replace(/\/$/, ''),
+        href: entry.website.startsWith('http') ? entry.website : `https://${entry.website}`,
+      }
+    : null,
+].filter((f): f is NonNullable<typeof f> => f != null);
+---
+
+<section
+  class:list={[
+    embedded ? '' : 'border-brand-gray-200 rounded-card border bg-white shadow-card',
+  ]}
+  aria-labelledby={embedded ? undefined : 'external-context-heading'}
+>
+  {
+    !embedded && (
+      <div class="border-brand-gray-200 border-b px-4 py-3">
+        <h2 id="external-context-heading" class="text-brand-blue text-lg font-bold">
+          Public background
+        </h2>
+        <p class="text-brand-gray-600 mt-0.5 text-xs">
+          {externalContextSource}
+          {externalContextGeneratedAt
+            ? ` · snapshot ${new Date(externalContextGeneratedAt).toLocaleDateString('en-US')}`
+            : ''}
+        </p>
+      </div>
+    )
+  }
+
+  <div class:list={[embedded ? 'space-y-2' : 'px-4 py-4']}>
+    {
+      confidenceNote && (
+        <p class="border-brand-gray-200 bg-brand-sky/40 text-brand-gray-800 mb-3 rounded border px-3 py-2 text-xs">
+          {confidenceNote}
+        </p>
+      )
+    }
+
+    {
+      summaryParagraphs.length > 0 && (
+        <div
+          class:list={[
+            'text-brand-gray-800 space-y-2 leading-relaxed',
+            profileBio ? 'text-sm' : embedded ? 'text-[0.65rem]' : 'text-sm',
+            !profileBio && 'line-clamp-6',
+          ]}
+        >
+          {summaryParagraphs.map((para) => (
+            <p>{para}</p>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      facts.length > 0 && (
+        <dl class="border-brand-gray-200 mt-1.5 grid gap-1 border-t pt-1.5 sm:grid-cols-2">
+          {
+            facts.map((fact) => (
+              <div>
+                <dt class="text-brand-gray-600 text-xs font-semibold uppercase">{fact.label}</dt>
+                <dd class="text-brand-gray-900 mt-0.5 text-sm font-medium">
+                  {'href' in fact && fact.href ? (
+                    <a
+                      href={fact.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-brand-blue hover:underline"
+                    >
+                      {fact.value}
+                    </a>
+                  ) : (
+                    fact.value
+                  )}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      )
+    }
+
+    {
+      !profileBio && (
+        <p class="text-brand-gray-500 mt-4 text-xs">
+          <a
+            href={entry.wikipediaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-brand-blue font-semibold hover:underline"
+          >
+            {entry.wikipediaTitle}
+          </a>
+          {' '}
+          on Wikipedia (CC BY-SA). Clinical quality metrics on this site come from CMS; {subjectLabel}{' '}
+          ratings on Medicare Care Compare are linked in External sources above.
+        </p>
+      )
+    }
+    {
+      profileBio && (
+        <p class="text-brand-gray-500 mt-3 text-[0.65rem] leading-snug">
+          Text from Wikipedia (CC BY-SA). Quality metrics on this profile are from CMS.
+        </p>
+      )
+    }
+  </div>
+</section>
