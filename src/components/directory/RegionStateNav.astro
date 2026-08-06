@@ -1,0 +1,110 @@
+---
+import { directoryFilterStateUrl, regionProfilePath } from '@/lib/directory-links';
+import { regionStateProfilePath } from '@/lib/region-state-paths';
+import { stateBenchmarks, researchBenchmarks } from '@/lib/research-benchmarks';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { cjrTone, starsTone, TONE_SURFACE } from '@/lib/visual-indicators';
+
+interface Props {
+  regionName: string;
+  regionSlug: string;
+  activeState?: string;
+  hospitals: DirectoryHospital[];
+}
+
+const { regionName, regionSlug, activeState, hospitals } = Astro.props;
+
+const byState = new Map<string, DirectoryHospital[]>();
+for (const h of hospitals) {
+  const list = byState.get(h.state) ?? [];
+  list.push(h);
+  byState.set(h.state, list);
+}
+
+function median(nums: number[]): number | null {
+  if (!nums.length) return null;
+  const s = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2;
+}
+
+const rows = [...byState.entries()]
+  .map(([state, list]) => {
+    const stars = list.map((h) => h.overallRating).filter((n): n is number => n != null);
+    const cjr = list.map((h) => h.teamRankByCjr).filter((n): n is number => n != null);
+    const bench = stateBenchmarks[state];
+    const medStars = median(stars);
+    const medCjr = median(cjr);
+    return {
+      state,
+      count: list.length,
+      medStars,
+      medCjr,
+      starsTone: starsTone(medStars, bench?.medianStars ?? researchBenchmarks.medianStars),
+      cjrTone: cjrTone(medCjr, bench?.medianTeamRankCjr ?? researchBenchmarks.medianTeamRankCjr),
+      href: regionStateProfilePath(regionSlug, state),
+      filterHref: directoryFilterStateUrl(state, { region: regionName }),
+    };
+  })
+  .sort((a, b) => b.count - a.count);
+---
+
+<aside
+  class="region-state-nav border-brand-gray-200 rounded-md border bg-white lg:sticky lg:top-14 lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto"
+  aria-label={`${regionName} states`}
+>
+  <div class="border-brand-gray-100 border-b px-2 py-1.5">
+    <a href={regionProfilePath(regionSlug)} class="text-brand-blue text-xs font-bold hover:underline">
+      {regionName}
+    </a>
+    <p class="text-brand-gray-500 text-[0.6rem]">Click a state · stays in region</p>
+  </div>
+  <ul class="divide-brand-gray-100 divide-y">
+    {
+      rows.map((row) => {
+        const isActive = activeState === row.state;
+        return (
+          <li>
+            <a
+              href={row.href}
+              class:list={[
+                'block px-2 py-1.5 text-[0.65rem] transition-colors',
+                isActive
+                  ? 'bg-brand-sky/40 text-brand-blue font-bold'
+                  : 'hover:bg-brand-sky/20 text-brand-gray-800',
+              ]}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <span class="flex items-center justify-between gap-2">
+                <span class="font-semibold">{row.state}</span>
+                <span class="text-brand-gray-600 tabular-nums">{row.count}</span>
+              </span>
+              <span class="mt-0.5 flex gap-1">
+                <span class:list={[TONE_SURFACE[row.starsTone], 'rounded px-1 py-0.5 text-[0.55rem] font-bold tabular-nums']}>
+                  {row.medStars != null ? `${row.medStars}★` : '—'}
+                </span>
+                <span class:list={[TONE_SURFACE[row.cjrTone], 'rounded px-1 py-0.5 text-[0.55rem] font-bold tabular-nums']}>
+                  {row.medCjr != null ? `#${Math.round(row.medCjr)}` : '—'}
+                </span>
+              </span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+  {
+    activeState && (
+      <p class="text-brand-gray-500 border-brand-gray-100 border-t px-2 py-1 text-[0.55rem]">
+        <a href={regionProfilePath(regionSlug)} class="text-brand-blue hover:underline">All {regionName}</a>
+        {' · '}
+        <a
+          href={directoryFilterStateUrl(activeState, { region: regionName })}
+          class="text-brand-blue hover:underline"
+        >
+          Filter {activeState}
+        </a>
+      </p>
+    )
+  }
+</aside>

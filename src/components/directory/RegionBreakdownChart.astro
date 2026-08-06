@@ -1,0 +1,97 @@
+---
+import type { RegionBreakdownRow } from '@/lib/region-breakdown';
+
+interface Props {
+  rows: RegionBreakdownRow[];
+}
+
+const { rows } = Astro.props;
+const maxCount = Math.max(...rows.map((r) => r.count), 1);
+const cjrRows = rows.filter((r) => r.medianCjr != null);
+const cjrValues = cjrRows.map((r) => r.medianCjr!);
+const cjrMin = cjrValues.length ? Math.min(...cjrValues) : 0;
+const cjrMax = cjrValues.length ? Math.max(...cjrValues) : 1;
+const cjrSpan = cjrMax - cjrMin || 1;
+---
+
+{
+  rows.length > 0 ? (
+    <div class="region-breakdown grid gap-2 sm:grid-cols-3">
+      <div class="min-w-0">
+        <h4 class="text-brand-gray-800 text-[0.65rem] font-bold">Hospitals</h4>
+        <p class="text-brand-gray-500 mb-1 text-[0.55rem]">Count per Master Tracker region</p>
+        <ul class="space-y-0.5" role="list">
+          {
+            rows.map((row) => {
+              const width = Math.round((row.count / maxCount) * 100);
+              return (
+                <li>
+                  <div class="flex items-center justify-between gap-2 text-[0.6rem]">
+                    <span class="text-brand-gray-700 truncate font-medium">{row.region}</span>
+                    <span class="text-brand-gray-900 shrink-0 tabular-nums font-bold">{row.count}</span>
+                  </div>
+                  <div class="ind-bar-track mt-0.5 h-1.5" aria-hidden="true">
+                    <div class="ind-bar-fill ind-bar-fill--mix h-full" style={`width: ${width}%`} />
+                  </div>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </div>
+      <div class="min-w-0">
+        <h4 class="text-brand-gray-800 text-[0.65rem] font-bold">Median CJR</h4>
+        <p class="text-brand-gray-500 mb-1 text-[0.55rem]">Lower rank = better</p>
+        <ul class="space-y-0.5" role="list">
+          {
+            cjrRows.map((row) => {
+              const width = Math.max(
+                4,
+                Math.round(((cjrMax - row.medianCjr!) / cjrSpan) * 100),
+              );
+              return (
+                <li>
+                  <div class="flex items-center justify-between gap-2 text-[0.6rem]">
+                    <span class="text-brand-gray-700 truncate font-medium">{row.region}</span>
+                    <span class="text-brand-gray-900 shrink-0 tabular-nums font-bold">
+                      #{Math.round(row.medianCjr!)}
+                    </span>
+                  </div>
+                  <div class="ind-bar-track mt-0.5 h-1.5" aria-hidden="true">
+                    <div class="ind-bar-fill ind-bar-fill--mix h-full" style={`width: ${width}%`} />
+                  </div>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </div>
+      <div class="min-w-0">
+        <h4 class="text-brand-gray-800 text-[0.65rem] font-bold">% outreach yes</h4>
+        <p class="text-brand-gray-500 mb-1 text-[0.55rem]">Share with outreach = Yes</p>
+        <ul class="space-y-0.5" role="list">
+          {
+            rows.map((row) => {
+              const width = row.pctOutreach;
+              return (
+                <li>
+                  <div class="flex items-center justify-between gap-2 text-[0.6rem]">
+                    <span class="text-brand-gray-700 truncate font-medium">{row.region}</span>
+                    <span class="text-brand-gray-900 shrink-0 tabular-nums font-bold">
+                      {row.pctOutreach}%
+                    </span>
+                  </div>
+                  <div class="ind-bar-track mt-0.5 h-1.5" aria-hidden="true">
+                    <div class="ind-bar-fill ind-bar-fill--mix h-full" style={`width: ${width}%`} />
+                  </div>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </div>
+    </div>
+  ) : (
+    <p class="text-brand-gray-500 text-[0.65rem]">No region assignments in cohort.</p>
+  )
+}
