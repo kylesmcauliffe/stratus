@@ -1,0 +1,49 @@
+---
+import type { PipelineBreakdown } from '@/lib/system-rollups';
+
+interface Props {
+  title: string;
+  rows: PipelineBreakdown[];
+  id: string;
+}
+
+const { title, rows, id } = Astro.props;
+const total = rows.reduce((s, r) => s + r.count, 0) || 1;
+---
+
+{
+  rows.length > 0 && (
+    <div class="pipeline-funnel min-w-0" data-funnel={id}>
+      <h3 class="text-brand-gray-800 mb-1 text-xs font-bold">{title}</h3>
+      <ul class="space-y-1">
+        {
+          rows.map((row, i) => {
+            const pctOfTotal = Math.round((row.count / total) * 100);
+            const prev = i > 0 ? rows[i - 1]!.count : null;
+            const conv =
+              prev != null && prev > 0 ? Math.round((row.count / prev) * 100) : null;
+            return (
+              <li>
+                <div class="flex items-center justify-between gap-2 text-[0.65rem]">
+                  <span class="text-brand-gray-700 font-medium">{row.label}</span>
+                  <span class="text-brand-gray-900 tabular-nums font-bold">
+                    {row.count}
+                    <span class="text-brand-gray-500 font-normal"> ({pctOfTotal}%)</span>
+                    {conv != null && (
+                      <span class="text-brand-gray-500 font-normal"> · {conv}% of prior</span>
+                    )}
+                  </span>
+                </div>
+                <div
+                  class="bg-brand-blue/80 mt-0.5 h-3 rounded-sm transition-[width] duration-200"
+                  style={`width: ${pctOfTotal}%`}
+                  aria-hidden="true"
+                />
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  )
+}
