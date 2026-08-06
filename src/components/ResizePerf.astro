@@ -1,0 +1,17 @@
+---
+/** Disables CSS transitions during active window resize so layout reflow feels immediate. */
+---
+
+<script>
+  let resizeEndTimer = 0;
+
+  const onResize = () => {
+    document.body.classList.add('is-resizing');
+    window.clearTimeout(resizeEndTimer);
+    resizeEndTimer = window.setTimeout(() => {
+      document.body.classList.remove('is-resizing');
+    }, 120);
+  };
+
+  window.addEventListener('resize', onResize, { passive: true });
+</script>

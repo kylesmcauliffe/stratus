@@ -1,0 +1,144 @@
+---
+interface Props {
+  states: string[];
+  ownershipOptions: string[];
+  healthSystemOptions: string[];
+  regionOptions?: string[];
+  outreachOptions?: string[];
+  pipelineOptions?: string[];
+  salesStageOptions?: string[];
+}
+
+const {
+  states,
+  ownershipOptions,
+  healthSystemOptions,
+  regionOptions = [],
+  outreachOptions = [],
+  pipelineOptions = [],
+  salesStageOptions = [],
+} = Astro.props;
+---
+
+<details
+  id="hospital-search-filters"
+  class="border-brand-gray-200 cohort-panel__filters rounded-card border bg-white px-2.5 py-2"
+  open
+>
+  <summary class="text-brand-gray-900 cursor-pointer text-xs font-bold tracking-wide uppercase">
+    All filters
+  </summary>
+  <div class="mt-2 grid gap-2 sm:grid-cols-4">
+    <div>
+      <label for="hospital-search-state" class="dir-label">State</label>
+      <select id="hospital-search-state" class="dir-input">
+        <option value="">All states</option>
+        {states.map((state) => (
+          <option value={state}>{state}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-stars" class="dir-label">Min CMS stars</label>
+      <select id="hospital-search-stars" class="dir-input">
+        <option value="">Any</option>
+        <option value="5">5+</option>
+        <option value="4">4+</option>
+        <option value="3">3+</option>
+        <option value="2">2+</option>
+        <option value="1">1+</option>
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-beds" class="dir-label">Beds</label>
+      <select id="hospital-search-beds" class="dir-input">
+        <option value="">Any</option>
+        <option value="<100">&lt;100</option>
+        <option value="100-299">100–299</option>
+        <option value="300+">300+</option>
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-rural" class="dir-label">Rural / urban</label>
+      <select id="hospital-search-rural" class="dir-input">
+        <option value="">Any</option>
+        <option value="R">Rural</option>
+        <option value="U">Urban</option>
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-ownership" class="dir-label">Ownership</label>
+      <select id="hospital-search-ownership" class="dir-input">
+        <option value="">Any</option>
+        {ownershipOptions.map((o) => (
+          <option value={o}>{o}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-system" class="dir-label">Health system</label>
+      <select id="hospital-search-system" class="dir-input">
+        <option value="">Any</option>
+        {healthSystemOptions.map((s) => (
+          <option value={s}>{s}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-region" class="dir-label">Region</label>
+      <select id="hospital-search-region" class="dir-input">
+        <option value="">Any</option>
+        {regionOptions.map((r) => (
+          <option value={r}>{r}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-outreach" class="dir-label">Outreach</label>
+      <select id="hospital-search-outreach" class="dir-input">
+        <option value="">Any</option>
+        {outreachOptions.map((o) => (
+          <option value={o}>{o}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-pipeline" class="dir-label">Pipeline</label>
+      <select id="hospital-search-pipeline" class="dir-input">
+        <option value="">Any</option>
+        {pipelineOptions.map((p) => (
+          <option value={p}>{p}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-stage" class="dir-label">Sales stage</label>
+      <select id="hospital-search-stage" class="dir-input">
+        <option value="">Any</option>
+        {salesStageOptions.map((s) => (
+          <option value={s}>{s}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label for="hospital-search-cjr-max" class="dir-label">Max CJR rank</label>
+      <select id="hospital-search-cjr-max" class="dir-input">
+        <option value="">Any</option>
+        <option value="25">Top 25</option>
+        <option value="50">Top 50</option>
+        <option value="100">Top 100</option>
+        <option value="200">Top 200</option>
+      </select>
+    </div>
+    <div class="flex items-end">
+      <label class="text-brand-gray-700 flex cursor-pointer items-center gap-2 text-xs font-semibold">
+        <input
+          id="hospital-search-cjr-top50"
+          type="checkbox"
+          class="border-brand-gray-300 text-brand-blue focus:ring-brand-blue size-3.5 rounded"
+        />
+        CJR top-50 only
+      </label>
+    </div>
+  </div>
+</details>
