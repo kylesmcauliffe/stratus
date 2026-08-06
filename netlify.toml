@@ -1,0 +1,64 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  SITE = "https://rainfall-aeo.netlify.app"
+
+[[redirects]]
+  from = "/cms-team/participating-hospitals"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cms-team/participating-hospitals/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/cms-team/hospitals-by-state"
+  to = "/#hospital-map"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cms-team/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/team"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/about/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/schedule-a-demo"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/legal/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/integration/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/post/*"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/raincompliant"
+  to = "/"
+  status = 301

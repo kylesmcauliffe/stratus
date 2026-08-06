@@ -1,0 +1,49 @@
+{
+  "name": "rainfall-web",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/write-state-redirects.mjs && astro build",
+    "build:staging": "SITE=https://rainfall-aeo.netlify.app npm run build",
+    "build:drop": "npm run build:staging && npm run audit:security",
+    "build:production": "SITE=https://www.rainfallhealth.com npm run build",
+    "audit:aeo": "node scripts/aeo-dist-audit.mjs",
+    "audit:security": "node scripts/security-verify.mjs",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm run format:check && npm run check",
+    "sync:team-roster": "node scripts/sync-team-roster-from-csv.mjs",
+    "enrich:hospitals": "node scripts/enrich-team-hospitals.mjs",
+    "fetch:public-data": "node scripts/fetch-hospital-public-data.mjs",
+    "fetch:county-demographics": "node scripts/fetch-county-demographics.mjs",
+    "fetch:cbsa-demographics": "node scripts/fetch-cbsa-demographics.mjs",
+    "build:directory-index": "node scripts/build-directory-index.mjs",
+    "fetch:external-context": "node scripts/fetch-external-context.mjs",
+    "import:rainfall-tracker": "node scripts/import-rainfall-tracker.mjs",
+    "refresh:data": "npm run sync:team-roster && npm run import:rainfall-tracker && npm run fetch:public-data && npm run fetch:county-demographics && npm run fetch:cbsa-demographics && npm run build:directory-index"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.2",
+    "@iconify-json/ph": "^1.2.2",
+    "@resvg/resvg-js": "^2.6.2",
+    "astro": "^6.1.10",
+    "astro-icon": "^1.1.5",
+    "satori": "^0.26.0",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "xlsx": "^0.18.5",
+    "@astrojs/check": "^0.9.9",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.4",
+    "prettier": "^3.8.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "schema-dts": "^2.0.0",
+    "tailwindcss": "^4.2.4"
+  }
+}
