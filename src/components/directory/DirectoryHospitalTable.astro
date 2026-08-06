@@ -1,0 +1,318 @@
+---
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { hospitalDisplayName } from '@/lib/team-hospital-links';
+import { hospitalProfilePath } from '@/lib/hospital-slug';
+import { researchBenchmarks, stateBenchmarks } from '@/lib/research-benchmarks';
+import {
+  cjrBarPercent,
+  cjrTone,
+  ROSTER_SIZE,
+  starsTone,
+  TONE_SURFACE,
+} from '@/lib/visual-indicators';
+import {
+  DIR_ENTITY_LINK_CLASS,
+  directoryFilterOutreachUrl,
+  directoryFilterPipelineUrl,
+  regionProfilePathFromName,
+  stateProfilePath,
+  systemProfilePathFromName,
+} from '@/lib/directory-links';
+
+interface Props {
+  hospitals: DirectoryHospital[];
+  defaultSortKey?: string;
+  defaultSortDir?: 'asc' | 'desc';
+}
+
+const { hospitals, defaultSortKey = 'cjr', defaultSortDir = 'asc' } = Astro.props;
+const nat = researchBenchmarks;
+const linkClass = `${DIR_ENTITY_LINK_CLASS} hover:underline`;
+
+function systemShort(name: string | undefined): string {
+  if (!name) return '—';
+  return name.length > 28 ? `${name.slice(0, 26)}…` : name;
+}
+
+function regionShort(name: string | undefined): string {
+  if (!name) return '—';
+  return name.length > 22 ? `${name.slice(0, 20)}…` : name;
+}
+---
+
+<div class="hospital-results-panel w-full min-h-0 overflow-auto rounded-md border border-brand-gray-200 bg-white">
+  <table
+    class="dir-table dir-roster-table w-full text-left text-xs"
+    data-sortable
+    data-sort-default={defaultSortKey}
+    data-sort-default-dir={defaultSortDir}
+  >
+    <thead>
+      <tr class="text-[0.65rem]">
+        <th
+          class="dir-th-sort border-brand-gray-200 min-w-[9rem] border px-2 py-1 font-semibold"
+          data-sort-key="hospital"
+          data-sort-type="text"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          Hospital<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="state"
+          data-sort-type="text"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          ST<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 min-w-[8rem] border px-2 py-1 font-semibold"
+          data-sort-key="system"
+          data-sort-type="text"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          System<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 min-w-[7rem] border px-2 py-1 font-semibold"
+          data-sort-key="region"
+          data-sort-type="text"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          Region<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="cjr"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+          title="Rainfall CJR rank (1 = best)"
+        >
+          CJR<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="outreach"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          Out<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="pipeline"
+          data-sort-type="text"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          Pipe<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="stars"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          ★<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="beds"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          Beds<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="discharges"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          Disch<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="mspb"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          MSPB<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+        <th
+          class="dir-th-sort border-brand-gray-200 border px-2 py-1 font-semibold"
+          data-sort-key="hvbp"
+          data-sort-type="number"
+          tabindex="0"
+          role="columnheader"
+          aria-sort="none"
+        >
+          HVBP<span class="dir-sort-indicator" aria-hidden="true"></span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        hospitals.map((h) => {
+          const bench = stateBenchmarks[h.state];
+          const starT = starsTone(h.overallRating, bench?.medianStars ?? nat.medianStars);
+          const cjrT = cjrTone(h.teamRankByCjr ?? null, bench?.medianTeamRankCjr ?? nat.medianTeamRankCjr);
+          const cjrPct = cjrBarPercent(h.teamRankByCjr ?? null, ROSTER_SIZE);
+          const outreachGood = h.outreachStatus === 'Yes';
+          const outreachBad = h.outreachStatus === 'No';
+          const outreachSort =
+            h.outreachStatus === 'Yes' ? '1' : h.outreachStatus === 'No' ? '0' : '';
+          return (
+            <tr
+              class="hover:bg-brand-sky/30"
+              data-sort-hospital={hospitalDisplayName(h.name).toLowerCase()}
+              data-sort-state={h.state}
+              data-sort-system={(h.healthSystem ?? '').toLowerCase()}
+              data-sort-region={(h.region ?? '').toLowerCase()}
+              data-sort-cjr={h.teamRankByCjr ?? ''}
+              data-sort-outreach={outreachSort}
+              data-sort-pipeline={(h.pipelineStatus ?? '').toLowerCase()}
+              data-sort-stars={h.overallRating ?? ''}
+              data-sort-beds={h.beds ?? ''}
+              data-sort-discharges={h.discharges ?? ''}
+              data-sort-mspb={h.mspbScore ?? ''}
+              data-sort-hvbp={h.hvbpTps ?? ''}
+            >
+              <td class="border-brand-gray-200 border px-2 py-0.5">
+                <a
+                  href={hospitalProfilePath(h.slug)}
+                  class="text-brand-blue font-semibold leading-tight hover:underline"
+                >
+                  {hospitalDisplayName(h.name)}
+                </a>
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 tabular-nums">
+                <a href={stateProfilePath(h.state)} class:list={[linkClass, 'font-semibold']}>
+                  {h.state}
+                </a>
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 text-[0.65rem]">
+                {
+                  h.healthSystem ? (
+                    <a
+                      href={systemProfilePathFromName(h.healthSystem)}
+                      class:list={[linkClass, 'font-semibold']}
+                      title={h.healthSystem}
+                    >
+                      {systemShort(h.healthSystem)}
+                    </a>
+                  ) : (
+                    '—'
+                  )
+                }
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 text-[0.65rem]">
+                {
+                  h.region ? (
+                    <a
+                      href={regionProfilePathFromName(h.region)}
+                      class:list={[linkClass, 'font-semibold']}
+                      title={h.region}
+                    >
+                      {regionShort(h.region)}
+                    </a>
+                  ) : (
+                    '—'
+                  )
+                }
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5">
+                <div class="flex min-w-[3.25rem] flex-col gap-0.5">
+                  <span class:list={[TONE_SURFACE[cjrT], 'inline-block rounded px-1 py-px font-bold tabular-nums']}>
+                    {h.teamRankByCjr != null ? `#${h.teamRankByCjr}` : '—'}
+                  </span>
+                  {
+                    cjrPct != null && (
+                      <div class="ind-bar-track h-1" aria-hidden="true">
+                        <div class="ind-bar-fill h-full" style={`width: ${cjrPct}%`} />
+                      </div>
+                    )
+                  }
+                </div>
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5">
+                {
+                  h.outreachStatus ? (
+                    <a
+                      href={directoryFilterOutreachUrl(h.outreachStatus, h.state)}
+                      class:list={[
+                        outreachGood
+                          ? 'ind-tone ind-tone--good'
+                          : outreachBad
+                            ? 'ind-tone ind-tone--warn'
+                            : 'ind-tone ind-tone--neutral',
+                        linkClass,
+                        'rounded px-1 py-px text-[0.65rem] font-semibold',
+                      ]}
+                    >
+                      {h.outreachStatus === 'Yes' ? 'Yes' : h.outreachStatus}
+                    </a>
+                  ) : (
+                    '—'
+                  )
+                }
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 text-[0.65rem]">
+                {
+                  h.pipelineStatus ? (
+                    <a
+                      href={directoryFilterPipelineUrl(h.pipelineStatus, h.state)}
+                      class:list={[linkClass, 'font-semibold']}
+                    >
+                      {h.pipelineStatus}
+                    </a>
+                  ) : (
+                    '—'
+                  )
+                }
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5">
+                <span class:list={[TONE_SURFACE[starT], 'inline-block rounded px-1 py-px font-bold tabular-nums']}>
+                  {h.overallRating ?? '—'}
+                </span>
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 tabular-nums">
+                {h.beds != null ? h.beds.toLocaleString('en-US') : '—'}
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 tabular-nums">
+                {h.discharges != null ? h.discharges.toLocaleString('en-US') : '—'}
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 tabular-nums">
+                {h.mspbScore != null ? h.mspbScore.toFixed(2) : '—'}
+              </td>
+              <td class="border-brand-gray-200 border px-2 py-0.5 tabular-nums">
+                {h.hvbpTps != null ? Math.round(h.hvbpTps) : '—'}
+              </td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</div>
