@@ -1,0 +1,200 @@
+---
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { getPublicProfile } from '@/data/hospital-public-profile';
+import HrrpMeasureGrid from '@/components/directory/profile/HrrpMeasureGrid.astro';
+import HvbpStackedBar from '@/components/directory/profile/HvbpStackedBar.astro';
+import MetricBar from '@/components/directory/profile/MetricBar.astro';
+import PeerContextStrip from '@/components/directory/profile/PeerContextStrip.astro';
+import { metricValueClass } from '@/lib/value-tone';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+  /** When set, render only one dashboard section (for tabbed layout). */
+  section?: 'quality' | 'payment' | 'market' | 'all';
+}
+
+const { hospital, record, section = 'all' } = Astro.props;
+const show = (part: typeof section) => section === 'all' || section === part;
+const profile = getPublicProfile(hospital);
+const g = profile?.general;
+const hrrp = profile?.hrrp;
+const hacrp = profile?.hacrp;
+const hcahps = profile?.hcahps;
+const hvbp = profile?.hvbp;
+const mspb = profile?.mspb;
+
+const hvbpDomains = hvbp
+  ? [
+      { label: 'Clinical outcomes', value: hvbp.clinicalOutcomes, max: 25 },
+      { label: 'Patient experience (HCAHPS)', value: hvbp.patientExperience, max: 25 },
+      { label: 'Safety', value: hvbp.safety, max: 25 },
+      { label: 'Efficiency / MSPB', value: hvbp.efficiency, max: 25 },
+    ].filter((d) => d.value != null)
+  : [];
+---
+
+<section aria-labelledby="dashboard-heading" class="space-y-6">
+  {
+    section === 'all' && (
+      <div>
+        <h2 id="dashboard-heading" class="text-brand-blue text-xl font-bold">Research dashboard</h2>
+        <p class="text-brand-gray-600 mt-1 text-sm">
+          Public CMS quality, payment, and market layers — built for TEAM episode accountability research.
+        </p>
+      </div>
+    )
+  }
+
+  <div class:list={[section === 'all' ? 'grid gap-4 lg:grid-cols-2' : 'space-y-4']}>
+    {
+      show('quality') && (
+    <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card">
+      <h3 class="text-brand-gray-900 mb-1 text-sm font-bold">Quality &amp; readmissions</h3>
+      <p class="text-brand-gray-500 mb-4 text-xs">HRRP excess ratios &gt; 1.0 mean worse-than-expected readmissions.</p>
+      {
+        !hrrp?.measures?.length ? (
+          <p class="text-brand-gray-600 text-sm">No HRRP match. Re-run <code class="text-xs">npm run fetch:public-data</code>.</p>
+        ) : (
+          <HrrpMeasureGrid
+            measures={hrrp.measures}
+            avgExcess={hrrp.avgExcessReadmissionRatio}
+            conditionsAbovePeers={hrrp.conditionsAbovePeers}
+          />
+        )
+      }
+      {
+        g && (
+          <dl class="text-brand-gray-700 border-brand-gray-100 mt-4 grid gap-2 border-t pt-4 text-xs sm:grid-cols-2">
+            <div>
+              <dt class="font-semibold">CMS overall stars</dt>
+              <dd>{g.overallRating ? `${g.overallRating} / 5` : '—'}</dd>
+            </div>
+            <div>
+              <dt class="font-semibold">HCAHPS stars</dt>
+              <dd>{hcahps?.starRating ? `${hcahps.starRating} / 5` : '—'}</dd>
+            </div>
+          </dl>
+        )
+      }
+    </article>
+      )
+    }
+
+    {
+      show('payment') && (
+    <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card">
+      {
+        hvbp && hvbpDomains.length > 0 && (
+          <HvbpStackedBar
+            totalScore={hvbp.totalPerformanceScore}
+            fiscalYear={hvbp.fiscalYear}
+            domains={hvbpDomains}
+          />
+        )
+      }
+      {
+        hvbp && hvbpDomains.length > 0 && (
+          <details class="mb-4">
+            <summary class="text-brand-gray-700 cursor-pointer text-xs font-semibold">
+              HVBP domain detail
+            </summary>
+            <div class="mt-2 space-y-2">
+              <MetricBar label="TPS (0–100)" value={hvbp.totalPerformanceScore} max={100} />
+              {hvbpDomains.map((d) => (
+                <MetricBar label={d.label} value={d.value} max={d.max} suffix=" pts" />
+              ))}
+            </div>
+          </details>
+        )
+      }
+      <dl class="text-brand-gray-700 grid gap-3 text-sm sm:grid-cols-2">
+        <div class="rounded-card border-brand-gray-100 border bg-brand-gray-50 px-3 py-2">
+          <dt class="text-xs font-semibold">HACRP penalty</dt>
+          <dd class="mt-0.5 text-base font-bold">
+            {hacrp?.paymentReduction === 'Yes' ? (
+              <span class={metricValueClass('Yes', { invertYesNo: true })}>Yes — 1% reduction</span>
+            ) : hacrp?.paymentReduction === 'No' ? (
+              <span class={metricValueClass('No', { invertYesNo: true })}>No</span>
+            ) : (
+              '—'
+            )}
+          </dd>
+          {hacrp?.totalHacScore != null && (
+            <dd class="text-brand-gray-500 mt-1 text-xs">
+              Total HAC score: {Number(hacrp.totalHacScore).toFixed(3)}
+            </dd>
+          )}
+        </div>
+        <div class="rounded-card border-brand-gray-100 border bg-brand-gray-50 px-3 py-2">
+          <dt class="text-xs font-semibold">MSPB (Medicare spending per episode)</dt>
+          <dd class="mt-0.5 text-base font-bold">
+            {mspb?.score != null ? mspb.score.toFixed(2) : '—'}
+          </dd>
+          <dd class="text-brand-gray-500 mt-1 text-xs">1.00 = national average; lower is more efficient</dd>
+        </div>
+      </dl>
+      <div class="mt-4">
+        <PeerContextStrip
+          record={record}
+          state={hospital.state}
+          metrics={['mspb', 'hvbp']}
+          title="Payment vs peers"
+          compact
+        />
+      </div>
+    </article>
+      )
+    }
+
+    {
+      show('market') && (
+    <article class="rounded-card border-brand-gray-200 border bg-white p-5 shadow-card lg:col-span-2">
+      <PeerContextStrip
+        record={record}
+        state={hospital.state}
+        metrics={['beds']}
+        title="Scale vs peers"
+        compact
+      />
+      <h3 class="text-brand-gray-900 mb-3 text-sm font-bold">Market &amp; service area</h3>
+      <dl class="text-brand-gray-700 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <dt class="text-xs font-semibold uppercase">County</dt>
+          <dd class="mt-1 font-medium">{g?.county ? `${g.county}, ${g.state}` : '—'}</dd>
+          <dd class="text-brand-gray-500 mt-1 text-xs">
+            Pop: {record?.population != null ? record.population.toLocaleString('en-US') : '—'}
+          </dd>
+          <dd class="text-brand-gray-500 text-xs">
+            Median income:{' '}
+            {record?.medianIncome != null ? `$${record.medianIncome.toLocaleString('en-US')}` : '—'}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs font-semibold uppercase">Metro (CBSA)</dt>
+          <dd class="mt-1 font-medium">{record?.cbsaName ?? hospital.city ?? '—'}</dd>
+          <dd class="text-brand-gray-500 mt-1 font-mono text-xs">CBSA {record?.medicareCbsaNumber ?? '—'}</dd>
+          <dd class="text-brand-gray-500 text-xs">
+            Pop: {record?.cbsaPopulation != null ? record.cbsaPopulation.toLocaleString('en-US') : '—'}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs font-semibold uppercase">Scale</dt>
+          <dd class="mt-1">{record?.beds != null ? `${record.beds.toLocaleString('en-US')} beds` : '—'}</dd>
+          <dd class="text-brand-gray-500 text-xs">
+            {record?.discharges != null ? `${record.discharges.toLocaleString('en-US')} discharges` : ''}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs font-semibold uppercase">Setting</dt>
+          <dd class="mt-1">{record?.ruralUrban === 'R' ? 'Rural' : record?.ruralUrban === 'U' ? 'Urban' : '—'}</dd>
+          <dd class="text-brand-gray-500 text-xs">{g?.ownership ?? ''}</dd>
+        </div>
+      </dl>
+    </article>
+      )
+    }
+
+  </div>
+</section>
