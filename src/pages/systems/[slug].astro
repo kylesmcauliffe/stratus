@@ -1,0 +1,103 @@
+---
+import DirectoryLayout from '@/layouts/DirectoryLayout.astro';
+import SystemRollupCards from '@/components/directory/SystemRollupCards.astro';
+import DirectoryHospitalTable from '@/components/directory/DirectoryHospitalTable.astro';
+import { directoryHealthSystems, getHealthSystemBySlug } from '@/lib/directory-index';
+import { directoryFilterSystemUrl } from '@/lib/directory-links';
+import StateLinkList from '@/components/directory/StateLinkList.astro';
+import { rollupHospitals } from '@/lib/system-rollups';
+import ExternalContextPanel from '@/components/directory/ExternalContextPanel.astro';
+import RollupVsNationalStrip from '@/components/directory/RollupVsNationalStrip.astro';
+import TeamStateMap from '@/components/TeamStateMap.astro';
+import { buildStateMapEntries } from '@/lib/state-map-data';
+import { getSystemExternalContext, hasExternalContext } from '@/lib/external-context';
+
+export function getStaticPaths() {
+  return directoryHealthSystems().map((s) => ({
+    params: { slug: s.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const system = getHealthSystemBySlug(slug!);
+
+if (!system) {
+  return Astro.redirect('/');
+}
+
+const { name, hospitals } = system;
+const rollup = rollupHospitals(hospitals);
+const sorted = [...hospitals].sort((a, b) => {
+  const ar = a.teamRankByCjr ?? 9999;
+  const br = b.teamRankByCjr ?? 9999;
+  if (ar !== br) return ar - br;
+  return a.name.localeCompare(b.name);
+});
+
+const filterHref = directoryFilterSystemUrl(name);
+const stateMapRows = buildStateMapEntries();
+const systemContext = getSystemExternalContext(slug!);
+const title = `${name} — TEAM hospitals`;
+const description = `${hospitals.length} CMS TEAM mandated hospitals affiliated with ${name}.`;
+---
+
+<DirectoryLayout title={title} description={description}>
+  <div class="site-container py-3 md:py-4">
+    <nav class="text-brand-gray-600 mb-4 text-sm">
+      <a href="/" class="text-brand-blue hover:underline">Directory</a>
+      <span aria-hidden="true"> / </span>
+      <a href="/states#systems" class="text-brand-blue hover:underline">Health systems</a>
+      <span aria-hidden="true"> / </span>
+      <span>{name}</span>
+    </nav>
+
+    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 class="text-brand-blue mb-1 text-xl font-bold tracking-tight md:text-2xl">{name}</h1>
+        <p class="text-brand-gray-700 text-sm">{description}</p>
+        <p class="text-brand-gray-600 mt-1 text-xs">
+          States: <StateLinkList states={rollup.states} />
+        </p>
+      </div>
+      <a
+        href={filterHref}
+        class="text-brand-blue border-brand-gray-200 hover:bg-brand-sky shrink-0 rounded-button border bg-white px-4 py-2.5 text-sm font-semibold"
+      >
+        Filter directory →
+      </a>
+    </div>
+
+    <RollupVsNationalStrip groupLabel={name} rollup={rollup} />
+
+    <SystemRollupCards rollup={rollup} hospitals={hospitals} />
+
+    {
+      hasExternalContext(systemContext) && (
+        <details
+          class="border-brand-gray-200 mb-3 rounded-md border bg-white px-3 py-2"
+          open
+        >
+          <summary class="text-brand-blue cursor-pointer text-xs font-bold">System background (Wikipedia)</summary>
+          <div class="mt-2">
+            <ExternalContextPanel entry={systemContext} subjectLabel={name} embedded />
+          </div>
+        </details>
+      )
+    }
+
+    <DirectoryHospitalTable hospitals={sorted} />
+
+    <div class="border-brand-gray-200 mt-4 rounded-card border bg-brand-gray-50/60 p-3">
+      <h2 class="text-brand-blue mb-2 text-sm font-bold">National context</h2>
+      <p class="text-brand-gray-500 mb-2 text-[0.65rem]">
+        States with {name} hospitals highlighted · click a state for its profile
+      </p>
+      <TeamStateMap
+        states={stateMapRows}
+        compact
+        emphasisStates={rollup.states}
+        linkMode="profile"
+      />
+    </div>
+  </div>
+</DirectoryLayout>

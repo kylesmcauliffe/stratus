@@ -1,0 +1,97 @@
+---
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { teamHospitals } from '@/data/team-hospitals';
+import { buildCohortCharts } from '@/lib/cohort-panel';
+import { buildNationalSnapshotMetrics } from '@/lib/cohort-snapshot';
+import StateSummaryBar from '@/components/directory/StateSummaryBar.astro';
+
+interface Props {
+  hospitals: DirectoryHospital[];
+}
+
+const { hospitals } = Astro.props;
+const initialCharts = buildCohortCharts(hospitals);
+const rosterTotal = teamHospitals.length;
+const nationalSnapshot = buildNationalSnapshotMetrics(hospitals, rosterTotal);
+const cohortLabel = `National TEAM cohort (${hospitals.length} hospitals)`;
+---
+
+<section
+  id="national-cohort-panel"
+  class="border-brand-gray-200 mb-2 rounded-card border bg-white p-3 shadow-card"
+  aria-labelledby="national-cohort-heading"
+  data-roster-total={rosterTotal}
+>
+  <details id="national-cohort-details" class="national-cohort-details group" open>
+    <summary
+      class="text-brand-blue flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-bold marker:content-none [&::-webkit-details-marker]:hidden"
+    >
+      <span class="inline-flex items-center gap-1">
+        <span aria-hidden="true" class="cohort-chevron text-brand-gray-500 inline-block transition-transform">
+          ▸
+        </span>
+        <span id="national-cohort-summary-text">Cohort charts</span>
+      </span>
+      <span id="national-cohort-label" class="text-brand-gray-600 text-[0.65rem] font-normal">
+        {cohortLabel}
+      </span>
+      <span class="text-brand-gray-500 w-full text-[0.6rem] font-normal sm:w-auto">
+        Click to expand or collapse
+      </span>
+    </summary>
+
+    <div class="cohort-panel__grid mt-2 grid gap-2 lg:grid-cols-3">
+      <div class="cohort-panel__col flex min-w-0 flex-col gap-1.5">
+        <slot name="map" />
+      </div>
+      <div class="cohort-panel__col flex min-w-0 flex-col gap-1.5">
+        <slot name="filters" />
+        <div
+          class="metric-distribution border-brand-gray-200 min-w-0 rounded-md border bg-white px-2 py-1.5"
+          data-cohort-metric-panel
+        >
+          <div
+            class="mb-1 flex flex-wrap gap-2 border-b border-brand-gray-200"
+            role="tablist"
+            aria-label="Cohort metric distribution"
+          >
+            <button
+              type="button"
+              role="tab"
+              class="cohort-metric-tab-btn text-brand-blue border-brand-blue -mb-px border-b-2 pb-0.5 text-[0.65rem] font-bold"
+              data-metric-track="cjr"
+              aria-selected="true"
+            >
+              CJR rank
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="cohort-metric-tab-btn text-brand-gray-600 border-transparent -mb-px border-b-2 pb-0.5 text-[0.65rem] font-semibold"
+              data-metric-track="stars"
+              aria-selected="false"
+            >
+              CMS stars
+            </button>
+          </div>
+          <div id="cohort-cjr-dist" data-metric-track-panel="cjr" set:html={initialCharts.cjr} />
+          <div
+            id="cohort-stars-dist"
+            class="hidden"
+            data-metric-track-panel="stars"
+            set:html={initialCharts.stars}
+          />
+        </div>
+        <StateSummaryBar national={nationalSnapshot} initialInFilter={hospitals.length} />
+      </div>
+      <div class="cohort-panel__col flex min-w-0 flex-col gap-1.5">
+        <div id="cohort-region-chart" set:html={initialCharts.region} />
+        <div
+          id="cohort-pipeline-funnel"
+          class="border-brand-gray-200 border-t pt-1.5"
+          set:html={initialCharts.funnel}
+        />
+      </div>
+    </div>
+  </details>
+</section>

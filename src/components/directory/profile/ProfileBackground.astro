@@ -1,0 +1,112 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { TeamHospital } from '@/data/team-hospitals';
+import type { DirectoryHospital } from '@/lib/hospital-directory-record';
+import { hospitalDisplayName } from '@/lib/team-hospital-links';
+import { systemSlugFromName } from '@/lib/hospital-directory-record';
+import { careCompareSearchUrl } from '@/lib/cms-links';
+import ExternalContextPanel from '@/components/directory/ExternalContextPanel.astro';
+import {
+  externalContextGeneratedAt,
+  getHospitalExternalContext,
+  getSystemExternalContext,
+  hasExternalContext,
+} from '@/lib/external-context';
+import hospitalContextJson from '@/data/hospital-external-context.json';
+
+interface Props {
+  hospital: TeamHospital;
+  record?: DirectoryHospital;
+  compact?: boolean;
+}
+
+const { hospital, record, compact = true } = Astro.props;
+const displayName = hospitalDisplayName(hospital.name);
+const hospitalWiki = getHospitalExternalContext(hospital.slug);
+const systemSlug = hospital.healthSystem ? systemSlugFromName(hospital.healthSystem) : null;
+const systemWiki =
+  hospital.healthSystem && systemSlug ? getSystemExternalContext(systemSlug) : null;
+const systemWikiEntry = systemWiki ?? undefined;
+const wikiContext = hasExternalContext(hospitalWiki)
+  ? hospitalWiki
+  : hasExternalContext(systemWikiEntry)
+    ? systemWikiEntry
+    : undefined;
+const wikiSubject = hasExternalContext(hospitalWiki)
+  ? displayName
+  : (hospital.healthSystem ?? displayName);
+const wikiSource = hasExternalContext(hospitalWiki)
+  ? 'hospital'
+  : hasExternalContext(systemWikiEntry)
+    ? 'system'
+    : null;
+const hospitalWikiCount = Object.keys(
+  (hospitalContextJson as { bySlug: Record<string, unknown> }).bySlug,
+).length;
+const snapshotDate = externalContextGeneratedAt
+  ? new Date(externalContextGeneratedAt).toLocaleDateString('en-US')
+  : null;
+const careCompareUrl = hospital.ccn ? careCompareSearchUrl(hospital.ccn) : null;
+---
+
+<section class="profile-bio border-brand-gray-200 rounded-md border bg-white">
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-brand-gray-100 px-2 py-1.5">
+    <h2 class="text-brand-blue text-sm font-bold">Bio</h2>
+    <div class="flex flex-wrap items-center gap-2">
+      {snapshotDate && <span class="text-brand-gray-500 text-[0.65rem]">Wiki {snapshotDate}</span>}
+      {
+        wikiContext && (
+          <a
+            href={wikiContext.wikipediaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-brand-blue inline-flex items-center gap-1 text-xs font-semibold hover:underline"
+          >
+            {wikiContext.wikipediaTitle}
+            <Icon name="ph:arrow-square-out" class="size-3.5 shrink-0" aria-hidden="true" />
+          </a>
+        )
+      }
+    </div>
+  </div>
+
+  {
+    wikiContext ? (
+      <div class="px-2 py-1.5">
+        {
+          wikiSource === 'system' && hospital.healthSystem && (
+            <p class="text-brand-gray-600 mb-1.5 text-[0.65rem]">
+              Via system: {hospital.healthSystem}
+            </p>
+          )
+        }
+        <ExternalContextPanel
+          entry={wikiContext}
+          subjectLabel={wikiSubject}
+          cmsBeds={record?.beds}
+          embedded
+          profileBio
+        />
+      </div>
+    ) : (
+      <p class="text-brand-gray-700 px-2 py-1.5 text-[0.65rem] leading-snug">
+        No Wikipedia snapshot yet ({hospitalWikiCount}/719 loaded).
+        {careCompareUrl && (
+          <>
+            {' '}
+            <a href={careCompareUrl} target="_blank" rel="noopener noreferrer" class="dir-entity-link">
+              Care Compare
+            </a>
+          </>
+        )}
+        {!compact && (
+          <>
+            {' '}
+            · run{' '}
+            <code class="text-[0.6rem]">npm run fetch:external-context -- --slug {hospital.slug}</code>
+          </>
+        )}
+      </p>
+    )
+  }
+</section>
