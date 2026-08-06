@@ -1,0 +1,273 @@
+---
+import DirectoryLayout from '@/layouts/DirectoryLayout.astro';
+import CmsHospitalSearch from '@/components/CmsHospitalSearch.astro';
+import HospitalSearchFilters from '@/components/HospitalSearchFilters.astro';
+import TeamStateMap from '@/components/TeamStateMap.astro';
+import NationalBenchmarkStrip from '@/components/directory/NationalBenchmarkStrip.astro';
+import NationalCohortPanel from '@/components/directory/NationalCohortPanel.astro';
+import HospitalSearchPresetsBar from '@/components/directory/HospitalSearchPresetsBar.astro';
+import { buildStateMapEntries } from '@/lib/state-map-data';
+import { teamHospitalsDataset } from '@/lib/structured-data';
+import { teamHospitals } from '@/data/team-hospitals';
+import {
+  directoryHospitals,
+  directoryFilterOptions,
+  stateSummariesByState,
+} from '@/lib/directory-index';
+import { buildNationalSnapshotMetrics } from '@/lib/cohort-snapshot';
+
+const title = `Hospital Directory (${teamHospitals.length} CMS TEAM)`;
+const description = `Search ${teamHospitals.length} hospitals on the CMS TEAM mandated participant list by name, state, or advanced filters.`;
+
+const states = [...new Set(directoryHospitals.map((h) => h.state))].sort();
+const stateRows = buildStateMapEntries();
+
+const summariesJson = JSON.stringify(stateSummariesByState).replace(/</g, '\\u003c');
+const nationalSnapshot = buildNationalSnapshotMetrics(directoryHospitals, teamHospitals.length);
+const nationalSnapshotJson = JSON.stringify(nationalSnapshot).replace(/</g, '\\u003c');
+
+const jsonLd = teamHospitalsDataset({
+  count: teamHospitals.length,
+  path: '/',
+  lastUpdated: new Date().toISOString(),
+});
+---
+
+<DirectoryLayout title={title} description={description} jsonLd={jsonLd}>
+  <div class="site-container py-3 md:py-4">
+    <header class="mb-3 flex flex-wrap items-end justify-between gap-3 border-b border-brand-gray-200 pb-3">
+      <div class="min-w-0">
+        <h1 class="text-brand-blue text-xl font-bold tracking-tight md:text-2xl">CMS TEAM Hospitals</h1>
+        <p class="text-brand-gray-600 mt-0.5 text-xs">
+          {teamHospitals.length} mandated hospitals · search, map, filters, export &amp; compare ·{' '}
+          <span class="text-brand-gray-500">/ search · m list · Esc clear</span>
+        </p>
+      </div>
+      <NationalBenchmarkStrip compact />
+    </header>
+
+    <NationalCohortPanel hospitals={directoryHospitals}>
+      <div
+        slot="map"
+        id="hospital-map"
+        class="cohort-panel__map border-brand-gray-200 scroll-mt-14 rounded-md border bg-brand-gray-50/60 p-2 shrink-0"
+      >
+        <div class="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-brand-blue text-xs font-bold">Map</h3>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              id="directory-toggle-list"
+              class="dir-btn text-[0.65rem]"
+              aria-expanded="true"
+              aria-controls="hospital-search-results"
+            >
+              Hide list
+            </button>
+            <span class="text-brand-gray-500 text-[0.65rem]">Map: filter · Alt profile · ST → state page</span>
+          </div>
+        </div>
+        <TeamStateMap states={stateRows} compact />
+        <HospitalSearchPresetsBar totalCount={teamHospitals.length} />
+      </div>
+      <HospitalSearchFilters
+        slot="filters"
+        states={states}
+        ownershipOptions={directoryFilterOptions.ownership}
+        healthSystemOptions={directoryFilterOptions.healthSystems}
+        regionOptions={directoryFilterOptions.regions}
+        outreachOptions={directoryFilterOptions.outreachStatuses}
+        pipelineOptions={directoryFilterOptions.pipelineStatuses}
+        salesStageOptions={directoryFilterOptions.salesStages}
+      />
+    </NationalCohortPanel>
+
+    <div id="directory-home" class="directory-home mt-2">
+      <section id="search" class="scroll-mt-14 flex min-w-0 flex-col">
+        <CmsHospitalSearch hospitals={directoryHospitals} />
+      </section>
+    </div>
+  </div>
+</DirectoryLayout>
+
+<script is:inline type="application/json" id="state-summaries-data" set:html={summariesJson} />
+<script is:inline type="application/json" id="national-snapshot-data" set:html={nationalSnapshotJson} />
+
+<script>
+  import { HOSPITAL_SEARCH_COHORT_UPDATED_EVENT, HOSPITAL_SEARCH_MATCHED_EVENT } from '@/lib/hospital-search';
+  import { buildCohortCharts } from '@/lib/cohort-panel';
+  import { initCohortMetricTabs } from '@/lib/cohort-metric-tabs';
+  import {
+    applyNationalSnapshotBar,
+    applyStateSnapshotBar,
+    type NationalSnapshotMetrics,
+    type SnapshotBarElements,
+  } from '@/lib/cohort-snapshot';
+  import type { SearchableHospital } from '@/lib/hospital-search';
+
+  const COHORT_PANEL_STORAGE_KEY = 'rainfall-cohort-panel-open';
+  import type { StateSummary } from '@/lib/directory-index';
+
+  const dataEl = document.getElementById('state-summaries-data');
+  const summaries: Record<string, StateSummary> = dataEl
+    ? JSON.parse(dataEl.textContent || '{}')
+    : {};
+  const nationalDataEl = document.getElementById('national-snapshot-data');
+  const nationalMetrics: NationalSnapshotMetrics = nationalDataEl
+    ? JSON.parse(nationalDataEl.textContent || '{}')
+    : {
+        rosterCount: 719,
+        medianStars: null,
+        pctRural: 0,
+        medianBeds: null,
+        medianTeamRankCjr: null,
+        pctOutreachYes: 0,
+        medianMspb: null,
+      };
+
+  const bar = document.getElementById('state-summary-bar');
+  const title = document.getElementById('state-summary-title');
+  const profileLink = document.getElementById('state-summary-profile-link') as HTMLAnchorElement | null;
+  const matchEl = document.getElementById('state-summary-match-count');
+  const rosterEl = document.getElementById('state-summary-roster-count');
+  const starsEl = document.getElementById('state-summary-median-stars');
+  const ruralEl = document.getElementById('state-summary-pct-rural');
+  const bedsEl = document.getElementById('state-summary-median-beds');
+  const cjrEl = document.getElementById('state-summary-median-cjr');
+  const outreachEl = document.getElementById('state-summary-pct-outreach');
+  const mspbEl = document.getElementById('state-summary-median-mspb');
+
+  const toggleList = document.getElementById('directory-toggle-list');
+  const listPanel = document.getElementById('hospital-list-panel');
+
+  const syncListToggle = () => {
+    if (!toggleList || !(listPanel instanceof HTMLDetailsElement)) return;
+    toggleList.setAttribute('aria-expanded', listPanel.open ? 'true' : 'false');
+    toggleList.textContent = listPanel.open ? 'Hide list' : 'Show list';
+  };
+
+  toggleList?.addEventListener('click', () => {
+    if (!(listPanel instanceof HTMLDetailsElement)) return;
+    listPanel.open = !listPanel.open;
+    syncListToggle();
+  });
+
+  listPanel?.addEventListener('toggle', syncListToggle);
+  syncListToggle();
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target as HTMLElement;
+    const typing =
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'SELECT' ||
+      target.isContentEditable;
+    if (event.key === '/' && !typing) {
+      event.preventDefault();
+      document.getElementById('hospital-search-name')?.focus();
+    }
+    if (event.key === 'm' && !typing) {
+      event.preventDefault();
+      if (listPanel instanceof HTMLDetailsElement) {
+        listPanel.open = !listPanel.open;
+        syncListToggle();
+      }
+    }
+  });
+
+  const cohortPanel = document.getElementById('national-cohort-panel');
+  const cohortDetails = document.getElementById('national-cohort-details');
+  const cohortLabel = document.getElementById('national-cohort-label');
+  const rosterTotal = cohortPanel
+    ? Number(cohortPanel.dataset.rosterTotal || '719')
+    : 719;
+
+  const snapshotEls: SnapshotBarElements | null = bar
+    ? {
+        bar,
+        title,
+        profileLink,
+        matchEl,
+        rosterEl,
+        starsEl,
+        ruralEl,
+        bedsEl,
+        cjrEl,
+        outreachEl,
+        mspbEl,
+      }
+    : null;
+
+  if (cohortDetails instanceof HTMLDetailsElement) {
+    try {
+      const stored = sessionStorage.getItem(COHORT_PANEL_STORAGE_KEY);
+      if (stored === '0') cohortDetails.open = false;
+    } catch {
+      /* keep default open */
+    }
+    cohortDetails.addEventListener('toggle', () => {
+      try {
+        sessionStorage.setItem(
+          COHORT_PANEL_STORAGE_KEY,
+          cohortDetails.open ? '1' : '0',
+        );
+      } catch {
+        /* ignore */
+      }
+    });
+  }
+
+  const cohortLabelText = (count: number) =>
+    count < rosterTotal
+      ? `Filtered cohort (${count} hospitals)`
+      : `National TEAM cohort (${count} hospitals)`;
+
+  const updateCohortCharts = (hospitals: SearchableHospital[]) => {
+    const charts = buildCohortCharts(hospitals);
+    const cjrEl = document.getElementById('cohort-cjr-dist');
+    const starsEl = document.getElementById('cohort-stars-dist');
+    const regionEl = document.getElementById('cohort-region-chart');
+    const funnelEl = document.getElementById('cohort-pipeline-funnel');
+    if (cjrEl) cjrEl.innerHTML = charts.cjr;
+    if (starsEl) starsEl.innerHTML = charts.stars;
+    if (regionEl) regionEl.innerHTML = charts.region;
+    if (funnelEl) funnelEl.innerHTML = charts.funnel;
+    if (cohortLabel) cohortLabel.textContent = cohortLabelText(hospitals.length);
+  };
+
+  if (cohortPanel) initCohortMetricTabs(cohortPanel);
+
+  document.addEventListener(HOSPITAL_SEARCH_COHORT_UPDATED_EVENT, (event) => {
+    const { hospitals } = (event as CustomEvent<{ hospitals: SearchableHospital[] }>).detail;
+    updateCohortCharts(hospitals);
+  });
+
+  document.addEventListener(HOSPITAL_SEARCH_MATCHED_EVENT, (event) => {
+    const { count, state } = (event as CustomEvent<{ count: number; state: string }>).detail;
+    if (!snapshotEls) return;
+
+    if (!state) {
+      applyNationalSnapshotBar(snapshotEls, nationalMetrics, count);
+      return;
+    }
+
+    const summary = summaries[state];
+    if (!summary) {
+      applyNationalSnapshotBar(snapshotEls, nationalMetrics, count);
+      return;
+    }
+
+    applyStateSnapshotBar(snapshotEls, state, summary, count);
+  });
+
+  /** Re-sync snapshot when URL has ?state= (search init may fire before this listener). */
+  queueMicrotask(() => {
+    if (!snapshotEls) return;
+    const state = new URLSearchParams(window.location.search).get('state')?.trim().toUpperCase() ?? '';
+    if (!state) return;
+    const summary = summaries[state];
+    if (!summary) return;
+    const count = Number(matchEl?.textContent ?? 0);
+    applyStateSnapshotBar(snapshotEls, state, summary, count);
+  });
+</script>
