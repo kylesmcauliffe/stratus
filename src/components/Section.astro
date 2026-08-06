@@ -1,0 +1,30 @@
+---
+interface Props {
+  background?: 'white' | 'light' | 'dark' | 'blue';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+  class?: string;
+  id?: string;
+}
+
+const { background = 'white', padding = 'lg', class: className, id } = Astro.props;
+
+const bgClasses: Record<string, string> = {
+  white: 'bg-white',
+  light: 'bg-brand-sky',
+  dark: 'bg-brand-navy text-white',
+  blue: 'bg-brand-blue text-white',
+};
+
+const paddingClasses: Record<string, string> = {
+  none: '',
+  sm: 'py-8',
+  md: 'py-8 md:py-10',
+  lg: 'py-12 md:py-20',
+};
+---
+
+<section class:list={[bgClasses[background], paddingClasses[padding], className]} id={id}>
+  <div class="site-container">
+    <slot />
+  </div>
+</section>

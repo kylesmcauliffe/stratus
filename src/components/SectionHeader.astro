@@ -1,0 +1,81 @@
+---
+import { uiTitleCase } from '@/lib/title-case';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lede?: string;
+  width?: '2xl' | '3xl' | '4xl' | '5xl' | 'body' | 'hero';
+  as?: 'h1' | 'h2';
+  marginBottom?: 'none' | 'lg';
+  align?: 'center' | 'left';
+  titleBlue?: boolean;
+  class?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  lede,
+  width = 'body',
+  as: Tag = 'h2',
+  marginBottom = 'none',
+  align = 'center',
+  titleBlue = false,
+  class: className,
+} = Astro.props as Props;
+
+const widthClass = (
+  {
+    '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    '4xl': 'max-w-4xl',
+    '5xl': 'max-w-5xl',
+    body: 'content-body',
+    hero: 'content-hero',
+  } as const
+)[width];
+const marginBottomClass = ({ none: '', lg: 'mb-12' } as const)[marginBottom];
+const headingSize =
+  Tag === 'h1'
+    ? 'text-[length:var(--text-fluid-display)]'
+    : 'text-3xl md:text-[length:var(--text-fluid-display)]';
+const ledeSize = Tag === 'h1' ? 'text-[length:var(--text-fluid-lead)]' : 'text-[length:var(--text-fluid-body)]';
+const hasSlot = Astro.slots.has('default');
+const titleMargin = lede ? 'mb-4' : hasSlot ? 'mb-6' : '';
+const ledeMargin = hasSlot ? 'mb-8' : '';
+---
+
+<div
+  class:list={[
+    'mx-auto',
+    align === 'center' ? 'text-center' : 'text-left',
+    widthClass,
+    marginBottomClass,
+    className,
+  ]}
+>
+  {
+    eyebrow && (
+      <p class="text-brand-blue mb-3 text-sm font-semibold tracking-wider uppercase">{eyebrow}</p>
+    )
+  }
+  <Tag
+    class:list={[
+      'font-bold',
+      headingSize,
+      titleMargin,
+      titleBlue ? 'text-brand-blue' : 'text-brand-gray-900',
+    ]}
+  >
+    {uiTitleCase(title)}
+  </Tag>
+  {
+    lede && (
+      <p class:list={['text-brand-gray-500 leading-relaxed', ledeSize, ledeMargin]}>
+        {uiTitleCase(lede)}
+      </p>
+    )
+  }
+  <slot />
+</div>
