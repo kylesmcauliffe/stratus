@@ -10,6 +10,8 @@ export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
+import { FilterProvider } from "@/lib/filter-context";
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     DMSans_400Regular,
@@ -24,11 +26,13 @@ export default function RootLayout() {
   if (!loaded && !error) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#eef4ff" } }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="hospital/[slug]" options={{ presentation: "card" }} />
-      </Stack>
-    </GestureHandlerRootView>
+    <FilterProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#eef4ff" } }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="hospital/[slug]" options={{ presentation: "card" }} />
+        </Stack>
+      </GestureHandlerRootView>
+    </FilterProvider>
   );
 }

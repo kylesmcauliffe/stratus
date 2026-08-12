@@ -3,16 +3,18 @@ import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppHeader } from "@/components/AppHeader";
 import { HospitalListCard } from "@/components/HospitalListCard";
+import { TeamStateMap } from "@/components/TeamStateMap";
 import { Chip } from "@/components/ui/Chip";
 import { SearchBar } from "@/components/ui/SearchBar";
-import { filterHospitals, getFilterChips, type SearchFilters } from "@/lib/search";
+import { useFilters } from "@/lib/filter-context";
+import { filterHospitals, getFilterChips } from "@/lib/search";
 import { getWatchlist, toggleWatchlist } from "@/lib/storage";
 import { directoryHospitals } from "@/src/lib/directory-index";
 import { useFocusEffect } from "expo-router";
 
 export default function HomeScreen() {
   const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<SearchFilters>({ sort: "cjr" });
+  const { filters, setFilters, selectedState, setSelectedState } = useFilters();
   const [saved, setSaved] = useState<string[]>([]);
 
   useFocusEffect(
@@ -21,7 +23,10 @@ export default function HomeScreen() {
     }, []),
   );
 
-  const activeFilters = useMemo(() => ({ ...filters, q: query }), [filters, query]);
+  const activeFilters = useMemo(
+    () => ({ ...filters, q: query, state: selectedState ?? filters.state }),
+    [filters, query, selectedState],
+  );
   const results = useMemo(() => filterHospitals(activeFilters), [activeFilters]);
   const chips = getFilterChips();
 
@@ -37,6 +42,12 @@ export default function HomeScreen() {
               subtitle={`${directoryHospitals.length} TEAM hospitals · search, save, and prep battle cards`}
             />
             <SearchBar value={query} onChangeText={setQuery} />
+            <TeamStateMap
+              compact
+              selectedState={selectedState}
+              onSelectState={setSelectedState}
+              metric="count"
+            />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-4 mb-2">
               <View className="flex-row gap-2 pr-4">
                 {chips.map((chip) => {
@@ -48,11 +59,14 @@ export default function HomeScreen() {
                       key={chip.label}
                       label={chip.label}
                       active={active}
-                      onPress={() => setFilters((prev) => ({ ...prev, ...chip.filters }))}
+                      onPress={() => {
+                        setSelectedState(null);
+                        setFilters((prev) => ({ ...prev, ...chip.filters }));
+                      }}
                     />
                   );
                 })}
-                <Chip label="Clear" onPress={() => setFilters({ sort: "cjr" })} />
+                <Chip label="Clear" onPress={() => { setFilters({ sort: "cjr" }); setSelectedState(null); }} />
               </View>
             </ScrollView>
             <Text className="mb-3 text-sm text-muted">{results.length} hospitals</Text>

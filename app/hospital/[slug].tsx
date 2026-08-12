@@ -2,9 +2,10 @@ import { useCallback, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Bookmark } from "lucide-react-native";
+import { ArrowLeft, Bookmark, Share2 } from "lucide-react-native";
 import { BattleCardView } from "@/components/BattleCardView";
 import { buildBattleCard } from "@/lib/battle-card";
+import { exportBattleCard } from "@/lib/export-battle-card";
 import { getNotes, getWatchlist, saveNote, toggleWatchlist } from "@/lib/storage";
 import { getDirectoryHospital } from "@/src/lib/directory-index";
 import { Colors } from "@/constants/theme";
@@ -53,16 +54,25 @@ export default function HospitalScreen() {
           <ArrowLeft size={20} color={Colors.brand[500]} />
           <Text className="font-semibold text-brand-600">Back</Text>
         </Pressable>
-        <Pressable
-          onPress={async () => {
-            await toggleWatchlist(card.slug);
-            setSaved(await getWatchlist().then((list) => list.includes(card.slug)));
-          }}
-          className="flex-row items-center gap-2 rounded-full bg-bg-elevated border border-border px-4 py-2"
-        >
-          <Bookmark size={18} color={saved ? Colors.brand[500] : Colors.subtle} fill={saved ? Colors.brand[500] : "transparent"} />
-          <Text className="text-sm font-medium text-muted">{saved ? "Saved" : "Save"}</Text>
-        </Pressable>
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => void exportBattleCard(card)}
+            className="flex-row items-center gap-2 rounded-full bg-bg-elevated border border-border px-4 py-2"
+          >
+            <Share2 size={18} color={Colors.brand[500]} />
+            <Text className="text-sm font-medium text-muted">Export</Text>
+          </Pressable>
+          <Pressable
+            onPress={async () => {
+              await toggleWatchlist(card.slug);
+              setSaved(await getWatchlist().then((list) => list.includes(card.slug)));
+            }}
+            className="flex-row items-center gap-2 rounded-full bg-bg-elevated border border-border px-4 py-2"
+          >
+            <Bookmark size={18} color={saved ? Colors.brand[500] : Colors.subtle} fill={saved ? Colors.brand[500] : "transparent"} />
+            <Text className="text-sm font-medium text-muted">{saved ? "Saved" : "Save"}</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>

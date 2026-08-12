@@ -1,360 +1,1184 @@
 {
-  "generatedAt": "2026-08-12T20:46:56.504Z",
+  "generatedAt": "2026-08-12",
   "national": {
-    "medianStars": 5,
-    "medianBeds": 865,
-    "medianMspb": 1.01,
-    "medianHvbpTps": 66,
-    "medianHcahpsStar": 4,
-    "medianHrrpExcess": 0.97,
-    "medianTeamRankCjr": 47,
-    "pctHacrpPenalty": 19,
-    "pctOutreachYes": 67
+    "medianStars": 3,
+    "medianBeds": 172,
+    "medianMspb": 0.99,
+    "medianHvbpTps": 29.166666666667,
+    "medianHcahpsStar": 3,
+    "medianHrrpExcess": 0.9990374999999999,
+    "medianTeamRankCjr": 360,
+    "pctHacrpPenalty": 24,
+    "pctOutreachYes": 35
   },
   "byState": {
-    "CA": {
-      "state": "CA",
-      "count": 3,
-      "medianStars": 5,
-      "medianBeds": 613,
-      "medianMspb": 0.98,
-      "medianHvbpTps": 72,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 12,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 2019,
-      "withPublicDataCount": 3,
+    "LA": {
+      "state": "LA",
+      "count": 32,
+      "medianStars": 3,
+      "pctRural": 16,
+      "totalBeds": 4698,
+      "medianBeds": 97,
+      "withPublicDataCount": 30,
       "ownershipBreakdown": [
         {
-          "label": "Nonprofit",
-          "count": 2
+          "label": "Voluntary non-profit - Private",
+          "count": 12
         },
         {
-          "label": "Government",
-          "count": 1
-        }
-      ]
-    },
-    "TX": {
-      "state": "TX",
-      "count": 2,
-      "medianStars": 4.5,
-      "medianBeds": 978.5,
-      "medianMspb": 1.045,
-      "medianHvbpTps": 59.5,
-      "medianHcahpsStar": 3.5,
-      "medianTeamRankCjr": 98.5,
-      "pctRural": 0,
-      "pctOutreachYes": 50,
-      "totalBeds": 1957,
-      "withPublicDataCount": 2,
-      "ownershipBreakdown": [
+          "label": "Government - Hospital District or Authority",
+          "count": 7
+        },
         {
-          "label": "Nonprofit",
-          "count": 2
+          "label": "Proprietary",
+          "count": 7
         }
-      ]
-    },
-    "NY": {
-      "state": "NY",
-      "count": 2,
-      "medianStars": 4.5,
-      "medianBeds": 948,
-      "medianMspb": 1.0550000000000002,
-      "medianHvbpTps": 59.5,
-      "medianHcahpsStar": 3.5,
-      "medianTeamRankCjr": 114.5,
-      "pctRural": 0,
-      "pctOutreachYes": 50,
-      "totalBeds": 1896,
-      "withPublicDataCount": 2,
-      "ownershipBreakdown": [
-        {
-          "label": "Nonprofit",
-          "count": 2
-        }
-      ]
-    },
-    "MA": {
-      "state": "MA",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 999,
-      "medianMspb": 1.04,
-      "medianHvbpTps": 66,
+      ],
+      "medianMspb": 1.06,
+      "medianHvbpTps": 29.5,
       "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 35,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 999,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Nonprofit",
-          "count": 1
-        }
-      ]
+      "medianTeamRankCjr": 509,
+      "pctOutreachYes": 38
     },
     "MN": {
       "state": "MN",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 1265,
+      "count": 30,
+      "medianStars": 4,
+      "pctRural": 20,
+      "totalBeds": 6440,
+      "medianBeds": 133,
+      "withPublicDataCount": 30,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 21
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 4
+        },
+        {
+          "label": "Government - Local",
+          "count": 3
+        }
+      ],
       "medianMspb": 0.92,
-      "medianHvbpTps": 82,
-      "medianHcahpsStar": 5,
-      "medianTeamRankCjr": 3,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 1265,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Nonprofit",
-          "count": 1
-        }
-      ]
+      "medianHvbpTps": 39.6666666666665,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 148.5,
+      "pctOutreachYes": 43
     },
-    "IL": {
-      "state": "IL",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 894,
-      "medianMspb": 1,
-      "medianHvbpTps": 69,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 41,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 894,
-      "withPublicDataCount": 1,
+    "CO": {
+      "state": "CO",
+      "count": 27,
+      "medianStars": 4,
+      "pctRural": 33,
+      "totalBeds": 5107,
+      "medianBeds": 180,
+      "withPublicDataCount": 27,
       "ownershipBreakdown": [
         {
-          "label": "Nonprofit",
-          "count": 1
+          "label": "Voluntary non-profit - Private",
+          "count": 13
+        },
+        {
+          "label": "Proprietary",
+          "count": 5
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 3
         }
-      ]
+      ],
+      "medianMspb": 0.975,
+      "medianHvbpTps": 31.2916666666665,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 227,
+      "pctOutreachYes": 37
+    },
+    "FL": {
+      "state": "FL",
+      "count": 39,
+      "medianStars": 3,
+      "pctRural": 51,
+      "totalBeds": 9102,
+      "medianBeds": 173,
+      "withPublicDataCount": 38,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 17
+        },
+        {
+          "label": "Proprietary",
+          "count": 12
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 5
+        }
+      ],
+      "medianMspb": 1,
+      "medianHvbpTps": 28.333333333333,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 349,
+      "pctOutreachYes": 33
+    },
+    "KY": {
+      "state": "KY",
+      "count": 17,
+      "medianStars": 3,
+      "pctRural": 53,
+      "totalBeds": 3507,
+      "medianBeds": 118,
+      "withPublicDataCount": 17,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 6
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 4
+        },
+        {
+          "label": "Proprietary",
+          "count": 4
+        }
+      ],
+      "medianMspb": 1.02,
+      "medianHvbpTps": 27.833333333333,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 387,
+      "pctOutreachYes": 29
     },
     "GA": {
       "state": "GA",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 733,
-      "medianMspb": 1.06,
-      "medianHvbpTps": 58,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 88,
-      "pctRural": 0,
-      "pctOutreachYes": 0,
-      "totalBeds": 733,
-      "withPublicDataCount": 1,
+      "count": 13,
+      "medianStars": 2,
+      "pctRural": 46,
+      "totalBeds": 2720,
+      "medianBeds": 227,
+      "withPublicDataCount": 13,
       "ownershipBreakdown": [
         {
-          "label": "Nonprofit",
+          "label": "Government - Hospital District or Authority",
+          "count": 5
+        },
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 4
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 3
+        }
+      ],
+      "medianMspb": 0.99,
+      "medianHvbpTps": 30.5,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 457,
+      "pctOutreachYes": 46
+    },
+    "CA": {
+      "state": "CA",
+      "count": 107,
+      "medianStars": 3,
+      "pctRural": 21,
+      "totalBeds": 26139,
+      "medianBeds": 211,
+      "withPublicDataCount": 107,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 46
+        },
+        {
+          "label": "Proprietary",
+          "count": 23
+        },
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 14
+        }
+      ],
+      "medianMspb": 0.99,
+      "medianHvbpTps": 29.5833333333335,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 347,
+      "pctOutreachYes": 36
+    },
+    "OR": {
+      "state": "OR",
+      "count": 17,
+      "medianStars": 4,
+      "pctRural": 12,
+      "totalBeds": 3586,
+      "medianBeds": 122,
+      "withPublicDataCount": 17,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 12
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 3
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 2
+        }
+      ],
+      "medianMspb": 0.89,
+      "medianHvbpTps": 38.125,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 254,
+      "pctOutreachYes": 29
+    },
+    "MS": {
+      "state": "MS",
+      "count": 12,
+      "medianStars": 2,
+      "pctRural": 75,
+      "totalBeds": 1492,
+      "medianBeds": 73,
+      "withPublicDataCount": 11,
+      "ownershipBreakdown": [
+        {
+          "label": "Proprietary",
+          "count": 3
+        },
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 3
+        },
+        {
+          "label": "Government - Local",
+          "count": 3
+        }
+      ],
+      "medianMspb": 1,
+      "medianHvbpTps": 21.2083333333335,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 619.5,
+      "pctOutreachYes": 42
+    },
+    "OK": {
+      "state": "OK",
+      "count": 18,
+      "medianStars": 3,
+      "pctRural": 44,
+      "totalBeds": 3004,
+      "medianBeds": 100,
+      "withPublicDataCount": 17,
+      "ownershipBreakdown": [
+        {
+          "label": "Proprietary",
+          "count": 8
+        },
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 6
+        },
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 2
+        }
+      ],
+      "medianMspb": 0.98,
+      "medianHvbpTps": 31.4583333333335,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 353.5,
+      "pctOutreachYes": 28
+    },
+    "SC": {
+      "state": "SC",
+      "count": 12,
+      "medianStars": 4,
+      "pctRural": 33,
+      "totalBeds": 2783,
+      "medianBeds": 149.5,
+      "withPublicDataCount": 12,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 10
+        },
+        {
+          "label": "Proprietary",
+          "count": 1
+        },
+        {
+          "label": "Government - State",
           "count": 1
         }
-      ]
+      ],
+      "medianMspb": 1.005,
+      "medianHvbpTps": 27.2916666666665,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 264,
+      "pctOutreachYes": 17
+    },
+    "MA": {
+      "state": "MA",
+      "count": 37,
+      "medianStars": 3,
+      "pctRural": 41,
+      "totalBeds": 10140,
+      "medianBeds": 189,
+      "withPublicDataCount": 37,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 28
+        },
+        {
+          "label": "Proprietary",
+          "count": 5
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 2
+        }
+      ],
+      "medianMspb": 0.98,
+      "medianHvbpTps": 29.583333333333,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 355,
+      "pctOutreachYes": 41
+    },
+    "TN": {
+      "state": "TN",
+      "count": 30,
+      "medianStars": 3,
+      "pctRural": 10,
+      "totalBeds": 8375,
+      "medianBeds": 163,
+      "withPublicDataCount": 30,
+      "ownershipBreakdown": [
+        {
+          "label": "Proprietary",
+          "count": 11
+        },
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 9
+        },
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 4
+        }
+      ],
+      "medianMspb": 1.02,
+      "medianHvbpTps": 27.208333333333,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 362.5,
+      "pctOutreachYes": 17
+    },
+    "UT": {
+      "state": "UT",
+      "count": 3,
+      "medianStars": 4,
+      "pctRural": 100,
+      "totalBeds": 334,
+      "medianBeds": 39,
+      "withPublicDataCount": 3,
+      "ownershipBreakdown": [
+        {
+          "label": "Proprietary",
+          "count": 2
+        },
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.94,
+      "medianHvbpTps": 40.75,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 93,
+      "pctOutreachYes": 33
+    },
+    "AL": {
+      "state": "AL",
+      "count": 5,
+      "medianStars": 3,
+      "pctRural": 60,
+      "totalBeds": 1220,
+      "medianBeds": 66,
+      "withPublicDataCount": 5,
+      "ownershipBreakdown": [
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 2
+        },
+        {
+          "label": "Proprietary",
+          "count": 2
+        },
+        {
+          "label": "Veterans Health Administration",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.99,
+      "medianHvbpTps": 25,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 417,
+      "pctOutreachYes": 20
+    },
+    "NY": {
+      "state": "NY",
+      "count": 78,
+      "medianStars": 3,
+      "pctRural": 32,
+      "totalBeds": 28161,
+      "medianBeds": 253,
+      "withPublicDataCount": 76,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 54
+        },
+        {
+          "label": "Government - Local",
+          "count": 7
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 7
+        }
+      ],
+      "medianMspb": 1.03,
+      "medianHvbpTps": 27.833333333333,
+      "medianHcahpsStar": 2,
+      "medianTeamRankCjr": 464,
+      "pctOutreachYes": 33
+    },
+    "WI": {
+      "state": "WI",
+      "count": 11,
+      "medianStars": 4,
+      "pctRural": 27,
+      "totalBeds": 1293,
+      "medianBeds": 133,
+      "withPublicDataCount": 11,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 6
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 2
+        },
+        {
+          "label": "Proprietary",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.92,
+      "medianHvbpTps": 40.25,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 267,
+      "pctOutreachYes": 36
+    },
+    "AZ": {
+      "state": "AZ",
+      "count": 8,
+      "medianStars": 3,
+      "pctRural": 63,
+      "totalBeds": 2378,
+      "medianBeds": 304.5,
+      "withPublicDataCount": 8,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 5
+        },
+        {
+          "label": "Proprietary",
+          "count": 2
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.99,
+      "medianHvbpTps": 23.2083333333335,
+      "medianHcahpsStar": 2,
+      "medianTeamRankCjr": 364,
+      "pctOutreachYes": 13
+    },
+    "AR": {
+      "state": "AR",
+      "count": 7,
+      "medianStars": 2,
+      "pctRural": 57,
+      "totalBeds": 894,
+      "medianBeds": 126,
+      "withPublicDataCount": 7,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 6
+        },
+        {
+          "label": "Proprietary",
+          "count": 1
+        }
+      ],
+      "medianMspb": 1.04,
+      "medianHvbpTps": 20.9166666666665,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 572,
+      "pctOutreachYes": 43
+    },
+    "NJ": {
+      "state": "NJ",
+      "count": 44,
+      "medianStars": 3,
+      "pctRural": 0,
+      "totalBeds": 12765,
+      "medianBeds": 241,
+      "withPublicDataCount": 44,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 33
+        },
+        {
+          "label": "Proprietary",
+          "count": 6
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 3
+        }
+      ],
+      "medianMspb": 1.07,
+      "medianHvbpTps": 27,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 332,
+      "pctOutreachYes": 25
     },
     "NC": {
       "state": "NC",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 957,
-      "medianMspb": 0.97,
-      "medianHvbpTps": 74,
+      "count": 16,
+      "medianStars": 3.5,
+      "pctRural": 44,
+      "totalBeds": 4014,
+      "medianBeds": 178.5,
+      "withPublicDataCount": 16,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 11
+        },
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 3
+        },
+        {
+          "label": "Government - State",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.945,
+      "medianHvbpTps": 32.4583333333335,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 206.5,
+      "pctOutreachYes": 44
+    },
+    "OH": {
+      "state": "OH",
+      "count": 9,
+      "medianStars": 3.5,
+      "pctRural": 78,
+      "totalBeds": 820,
+      "medianBeds": 78,
+      "withPublicDataCount": 9,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 4
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 2
+        },
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.95,
+      "medianHvbpTps": 32.9166666666665,
       "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 22,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 957,
+      "medianTeamRankCjr": 320,
+      "pctOutreachYes": 33
+    },
+    "MO": {
+      "state": "MO",
+      "count": 6,
+      "medianStars": 3,
+      "pctRural": 67,
+      "totalBeds": 1413,
+      "medianBeds": 186,
+      "withPublicDataCount": 6,
+      "ownershipBreakdown": [
+        {
+          "label": "Proprietary",
+          "count": 3
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 1
+        },
+        {
+          "label": "Government - Local",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.97,
+      "medianHvbpTps": 33.25,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 298,
+      "pctOutreachYes": 33
+    },
+    "MT": {
+      "state": "MT",
+      "count": 1,
+      "medianStars": 4,
+      "pctRural": 100,
+      "totalBeds": 139,
+      "medianBeds": 139,
       "withPublicDataCount": 1,
       "ownershipBreakdown": [
         {
-          "label": "Nonprofit",
+          "label": "Voluntary non-profit - Private",
           "count": 1
         }
-      ]
+      ],
+      "medianMspb": 0.9,
+      "medianHvbpTps": 49.833333333333,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 262,
+      "pctOutreachYes": 100
+    },
+    "TX": {
+      "state": "TX",
+      "count": 11,
+      "medianStars": 2.5,
+      "pctRural": 73,
+      "totalBeds": 1755,
+      "medianBeds": 120,
+      "withPublicDataCount": 11,
+      "ownershipBreakdown": [
+        {
+          "label": "Proprietary",
+          "count": 5
+        },
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 3
+        },
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 3
+        }
+      ],
+      "medianMspb": 1.07,
+      "medianHvbpTps": 23.375,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 526,
+      "pctOutreachYes": 36
+    },
+    "WV": {
+      "state": "WV",
+      "count": 4,
+      "medianStars": 2.5,
+      "pctRural": 25,
+      "totalBeds": 1254,
+      "medianBeds": 205.5,
+      "withPublicDataCount": 4,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 3
+        },
+        {
+          "label": "Government - Local",
+          "count": 1
+        }
+      ],
+      "medianMspb": 1.0150000000000001,
+      "medianHvbpTps": 23.375,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 473,
+      "pctOutreachYes": 50
+    },
+    "IL": {
+      "state": "IL",
+      "count": 12,
+      "medianStars": 3,
+      "pctRural": 58,
+      "totalBeds": 2919,
+      "medianBeds": 186,
+      "withPublicDataCount": 12,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 7
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 5
+        }
+      ],
+      "medianMspb": 0.97,
+      "medianHvbpTps": 21.416666666667,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 463,
+      "pctOutreachYes": 42
+    },
+    "ME": {
+      "state": "ME",
+      "count": 3,
+      "medianStars": 4,
+      "pctRural": 67,
+      "totalBeds": 513,
+      "medianBeds": 186,
+      "withPublicDataCount": 3,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 1
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 1
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.97,
+      "medianHvbpTps": 38.541666666667,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 160,
+      "pctOutreachYes": 67
+    },
+    "NH": {
+      "state": "NH",
+      "count": 8,
+      "medianStars": 3.5,
+      "pctRural": 50,
+      "totalBeds": 1149,
+      "medianBeds": 92.5,
+      "withPublicDataCount": 8,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 5
+        },
+        {
+          "label": "Proprietary",
+          "count": 3
+        }
+      ],
+      "medianMspb": 0.97,
+      "medianHvbpTps": 37,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 234,
+      "pctOutreachYes": 38
+    },
+    "NE": {
+      "state": "NE",
+      "count": 3,
+      "medianStars": 2,
+      "pctRural": 67,
+      "totalBeds": 295,
+      "medianBeds": 113,
+      "withPublicDataCount": 3,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 2
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 1
+        }
+      ],
+      "medianMspb": 1.03,
+      "medianHvbpTps": 26.5,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 552,
+      "pctOutreachYes": 67
+    },
+    "NM": {
+      "state": "NM",
+      "count": 9,
+      "medianStars": 2,
+      "pctRural": 44,
+      "totalBeds": 2479,
+      "medianBeds": 171,
+      "withPublicDataCount": 9,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 5
+        },
+        {
+          "label": "Proprietary",
+          "count": 3
+        },
+        {
+          "label": "Government - State",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.98,
+      "medianHvbpTps": 35.729166666667,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 483,
+      "pctOutreachYes": 33
+    },
+    "IN": {
+      "state": "IN",
+      "count": 6,
+      "medianStars": 3,
+      "pctRural": 67,
+      "totalBeds": 731,
+      "medianBeds": 108.5,
+      "withPublicDataCount": 6,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 4
+        },
+        {
+          "label": "Government - Local",
+          "count": 1
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.99,
+      "medianHvbpTps": 22.7083333333335,
+      "medianHcahpsStar": 3.5,
+      "medianTeamRankCjr": 444,
+      "pctOutreachYes": 17
+    },
+    "CT": {
+      "state": "CT",
+      "count": 3,
+      "medianStars": 4.5,
+      "pctRural": 67,
+      "totalBeds": 1486,
+      "medianBeds": 143,
+      "withPublicDataCount": 3,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 3
+        }
+      ],
+      "medianMspb": 1.005,
+      "medianHvbpTps": 30.333333333333,
+      "medianHcahpsStar": 3.5,
+      "medianTeamRankCjr": 223,
+      "pctOutreachYes": 0
+    },
+    "PA": {
+      "state": "PA",
+      "count": 26,
+      "medianStars": 4,
+      "pctRural": 62,
+      "totalBeds": 5324,
+      "medianBeds": 134,
+      "withPublicDataCount": 26,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 22
+        },
+        {
+          "label": "Physician",
+          "count": 2
+        },
+        {
+          "label": "Proprietary",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.99,
+      "medianHvbpTps": 28.1666666666665,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 265.5,
+      "pctOutreachYes": 42
+    },
+    "VA": {
+      "state": "VA",
+      "count": 18,
+      "medianStars": 3.5,
+      "pctRural": 0,
+      "totalBeds": 3572,
+      "medianBeds": 108.5,
+      "withPublicDataCount": 18,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 14
+        },
+        {
+          "label": "Proprietary",
+          "count": 3
+        },
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.975,
+      "medianHvbpTps": 29.416666666667,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 256.5,
+      "pctOutreachYes": 33
+    },
+    "IA": {
+      "state": "IA",
+      "count": 6,
+      "medianStars": 3.5,
+      "pctRural": 50,
+      "totalBeds": 954,
+      "medianBeds": 158,
+      "withPublicDataCount": 6,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 3
+        },
+        {
+          "label": "Voluntary non-profit - Church",
+          "count": 2
+        },
+        {
+          "label": "Proprietary",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.94,
+      "medianHvbpTps": 35.6666666666665,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 304.5,
+      "pctOutreachYes": 17
+    },
+    "DC": {
+      "state": "DC",
+      "count": 5,
+      "medianStars": 3,
+      "pctRural": 0,
+      "totalBeds": 1963,
+      "medianBeds": 339,
+      "withPublicDataCount": 5,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 3
+        },
+        {
+          "label": "Proprietary",
+          "count": 2
+        }
+      ],
+      "medianMspb": 0.98,
+      "medianHvbpTps": 27.166666666667,
+      "medianHcahpsStar": 2,
+      "medianTeamRankCjr": 311,
+      "pctOutreachYes": 40
+    },
+    "KS": {
+      "state": "KS",
+      "count": 5,
+      "medianStars": 3.5,
+      "pctRural": 100,
+      "totalBeds": 412,
+      "medianBeds": 110,
+      "withPublicDataCount": 5,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Other",
+          "count": 1
+        },
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 1
+        },
+        {
+          "label": "Government - Local",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.95,
+      "medianHvbpTps": 35.402777777778,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 410,
+      "pctOutreachYes": 60
+    },
+    "PR": {
+      "state": "PR",
+      "count": 2,
+      "medianStars": null,
+      "pctRural": 0,
+      "totalBeds": 205,
+      "medianBeds": 102.5,
+      "withPublicDataCount": 2,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 2
+        }
+      ],
+      "medianMspb": null,
+      "medianHvbpTps": null,
+      "medianHcahpsStar": null,
+      "medianTeamRankCjr": 678,
+      "pctOutreachYes": 100
+    },
+    "WA": {
+      "state": "WA",
+      "count": 5,
+      "medianStars": 3,
+      "pctRural": 20,
+      "totalBeds": 1181,
+      "medianBeds": 191,
+      "withPublicDataCount": 5,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 4
+        },
+        {
+          "label": "Government - Hospital District or Authority",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.94,
+      "medianHvbpTps": 26.708333333333,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 269,
+      "pctOutreachYes": 80
+    },
+    "RI": {
+      "state": "RI",
+      "count": 10,
+      "medianStars": 4,
+      "pctRural": 0,
+      "totalBeds": 2135,
+      "medianBeds": 166.5,
+      "withPublicDataCount": 10,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 7
+        },
+        {
+          "label": "Proprietary",
+          "count": 3
+        }
+      ],
+      "medianMspb": 1.005,
+      "medianHvbpTps": 29.583333333333,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 267.5,
+      "pctOutreachYes": 50
+    },
+    "SD": {
+      "state": "SD",
+      "count": 1,
+      "medianStars": 4,
+      "pctRural": 100,
+      "totalBeds": 24,
+      "medianBeds": 24,
+      "withPublicDataCount": 1,
+      "ownershipBreakdown": [
+        {
+          "label": "Voluntary non-profit - Private",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.92,
+      "medianHvbpTps": 34.333333333333,
+      "medianHcahpsStar": 4,
+      "medianTeamRankCjr": 189,
+      "pctOutreachYes": 0
+    },
+    "NV": {
+      "state": "NV",
+      "count": 1,
+      "medianStars": 3,
+      "pctRural": 100,
+      "totalBeds": 59,
+      "medianBeds": 59,
+      "withPublicDataCount": 1,
+      "ownershipBreakdown": [
+        {
+          "label": "Proprietary",
+          "count": 1
+        }
+      ],
+      "medianMspb": 0.87,
+      "medianHvbpTps": 34.25,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 449,
+      "pctOutreachYes": 100
     },
     "MI": {
       "state": "MI",
       "count": 1,
-      "medianStars": 5,
-      "medianBeds": 1000,
-      "medianMspb": 1.03,
-      "medianHvbpTps": 63,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 47,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 1000,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Government",
-          "count": 1
-        }
-      ]
-    },
-    "AZ": {
-      "state": "AZ",
-      "count": 1,
-      "medianStars": 4,
-      "medianBeds": 712,
-      "medianMspb": 1.09,
-      "medianHvbpTps": 51,
-      "medianHcahpsStar": 3,
-      "medianTeamRankCjr": 312,
-      "pctRural": 0,
-      "pctOutreachYes": 0,
-      "totalBeds": 712,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Nonprofit",
-          "count": 1
-        }
-      ]
-    },
-    "MO": {
-      "state": "MO",
-      "count": 1,
       "medianStars": 3,
-      "medianBeds": 886,
-      "medianMspb": 1.14,
-      "medianHvbpTps": 42,
-      "medianHcahpsStar": 3,
-      "medianTeamRankCjr": 489,
       "pctRural": 100,
-      "pctOutreachYes": 0,
-      "totalBeds": 886,
+      "totalBeds": 58,
+      "medianBeds": 58,
       "withPublicDataCount": 1,
       "ownershipBreakdown": [
         {
-          "label": "Nonprofit",
+          "label": "Voluntary non-profit - Private",
           "count": 1
         }
-      ]
-    },
-    "PA": {
-      "state": "PA",
-      "count": 1,
-      "medianStars": 3,
-      "medianBeds": 357,
-      "medianMspb": 1.11,
-      "medianHvbpTps": 45,
+      ],
+      "medianMspb": 0.91,
+      "medianHvbpTps": 35.75,
       "medianHcahpsStar": 3,
-      "medianTeamRankCjr": 378,
-      "pctRural": 0,
-      "pctOutreachYes": 0,
-      "totalBeds": 357,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Nonprofit",
-          "count": 1
-        }
-      ]
+      "medianTeamRankCjr": 334,
+      "pctOutreachYes": 0
     },
-    "CO": {
-      "state": "CO",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 678,
-      "medianMspb": 0.96,
-      "medianHvbpTps": 76,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 31,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 678,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Government",
-          "count": 1
-        }
-      ]
-    },
-    "OR": {
-      "state": "OR",
+    "ID": {
+      "state": "ID",
       "count": 1,
       "medianStars": 4,
-      "medianBeds": 576,
-      "medianMspb": 1.05,
-      "medianHvbpTps": 59,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 156,
-      "pctRural": 0,
-      "pctOutreachYes": 0,
-      "totalBeds": 576,
+      "pctRural": 100,
+      "totalBeds": 175,
+      "medianBeds": 175,
       "withPublicDataCount": 1,
       "ownershipBreakdown": [
         {
-          "label": "Government",
+          "label": "Voluntary non-profit - Private",
           "count": 1
         }
-      ]
-    },
-    "TN": {
-      "state": "TN",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 865,
-      "medianMspb": 1,
-      "medianHvbpTps": 67,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 55,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 865,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Nonprofit",
-          "count": 1
-        }
-      ]
-    },
-    "WA": {
-      "state": "WA",
-      "count": 1,
-      "medianStars": 5,
-      "medianBeds": 450,
+      ],
       "medianMspb": 0.94,
-      "medianHvbpTps": 79,
-      "medianHcahpsStar": 5,
-      "medianTeamRankCjr": 15,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 450,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Government",
-          "count": 1
-        }
-      ]
-    },
-    "UT": {
-      "state": "UT",
-      "count": 1,
-      "medianStars": 4,
-      "medianBeds": 504,
-      "medianMspb": 0.99,
-      "medianHvbpTps": 61,
-      "medianHcahpsStar": 4,
-      "medianTeamRankCjr": 98,
-      "pctRural": 0,
-      "pctOutreachYes": 100,
-      "totalBeds": 504,
-      "withPublicDataCount": 1,
-      "ownershipBreakdown": [
-        {
-          "label": "Nonprofit",
-          "count": 1
-        }
-      ]
+      "medianHvbpTps": 32.666666666667,
+      "medianHcahpsStar": 3,
+      "medianTeamRankCjr": 161,
+      "pctOutreachYes": 100
     }
   }
 }

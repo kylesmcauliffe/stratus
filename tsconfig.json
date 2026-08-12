@@ -5,6 +5,9 @@
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./*"],
+      "@/lib/hospital-slug": ["./src/lib/hospital-slug.ts"],
+      "@/lib/hospital-directory-record": ["./src/lib/hospital-directory-record.ts"],
+      "@/lib/team-hospital-links": ["./src/lib/team-hospital-links.ts"],
       "@/lib/*": ["./lib/*"],
       "@/src/lib/*": ["./src/lib/*"],
       "@/data/*": ["./src/data/*"],
@@ -24,7 +27,7 @@
     "src/lib/research-benchmarks.ts",
     "src/lib/metric-explainers.ts",
     "src/lib/value-tone.ts",
-    "src/lib/hospital-slug.ts",
+    "src/lib/compare-radar-metrics.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "uniwind-types.d.ts"

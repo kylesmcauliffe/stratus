@@ -1,13 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { Colors } from "@/constants/theme";
+import { NotebookPen } from "lucide-react-native";
 import { AppHeader } from "@/components/AppHeader";
 import { HospitalListCard } from "@/components/HospitalListCard";
 import { getDirectoryHospital } from "@/src/lib/directory-index";
 import { getWatchlist, toggleWatchlist } from "@/lib/storage";
 
 export default function SavedScreen() {
+  const router = useRouter();
   const [saved, setSaved] = useState<string[]>([]);
 
   useFocusEffect(
@@ -28,14 +31,26 @@ export default function SavedScreen() {
         keyExtractor={(item) => item!.slug}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 112, paddingTop: 16 }}
         ListHeaderComponent={
-          <AppHeader
-            title="Saved cards"
-            subtitle={
-              saved.length
-                ? `${saved.length} hospitals bookmarked for conferences and follow-up`
-                : "Tap the bookmark on any card to save it here"
-            }
-          />
+          <View>
+            <View className="flex-row items-start justify-between">
+              <View className="flex-1">
+                <AppHeader
+                  title="Saved cards"
+                  subtitle={
+                    saved.length
+                      ? `${saved.length} hospitals bookmarked for conferences and follow-up`
+                      : "Tap the bookmark on any card to save it here"
+                  }
+                />
+              </View>
+              <Pressable
+                onPress={() => router.push("/log")}
+                className="mt-2 h-11 w-11 items-center justify-center rounded-full bg-bg-elevated border border-border"
+              >
+                <NotebookPen size={20} color={Colors.brand[500]} />
+              </Pressable>
+            </View>
+          </View>
         }
         ListEmptyComponent={
           <View className="rounded-[24px] bg-bg-elevated border border-border p-6">
