@@ -1,4 +1,4 @@
-import type { CompareTone } from '@/lib/research-benchmarks';
+import type { CompareTone } from './research-benchmarks';
 
 export interface MetricExplainer {
   title: string;

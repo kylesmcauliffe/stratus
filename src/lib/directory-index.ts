@@ -1,5 +1,5 @@
-import type { DirectoryHospital } from '@/lib/hospital-directory-record';
-import { systemSlugFromName } from '@/lib/hospital-directory-record';
+import type { DirectoryHospital } from './hospital-directory-record';
+import { systemSlugFromName } from './hospital-directory-record';
 import indexData from '@/data/hospital-directory-index.json';
 import stateData from '@/data/state-summaries.json';
 

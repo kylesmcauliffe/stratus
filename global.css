@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "uniwind";
+
+@theme {
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #d9e6ff;
+  --color-brand-200: #b8d0ff;
+  --color-brand-300: #8ab2ff;
+  --color-brand-400: #5a8ef5;
+  --color-brand-500: #2b72e6;
+  --color-brand-600: #1f58c4;
+  --color-brand-700: #1a469f;
+  --color-brand-800: #183b82;
+  --color-brand-900: #18336b;
+
+  --color-base-50: #ffffff;
+  --color-base-100: #f8fafc;
+  --color-base-200: #eef2f7;
+  --color-base-300: #e2e8f0;
+  --color-base-400: #cbd5e1;
+  --color-base-500: #94a3b8;
+  --color-base-600: #64748b;
+  --color-base-700: #475569;
+  --color-base-800: #334155;
+  --color-base-900: #171717;
+
+  --color-good: #059669;
+  --color-warn: #d97706;
+  --color-bad: #dc2626;
+
+  --font-display: "DMSans_700Bold", system-ui, sans-serif;
+  --font-sans: "DMSans_400Regular", system-ui, sans-serif;
+  --radius-card: 24px;
+  --radius-btn: 16px;
+  --radius-pill: 999px;
+}
+
+@layer theme {
+  :root {
+    @variant light {
+      --color-bg: #eef4ff;
+      --color-bg-elevated: #ffffff;
+      --color-bg-soft: #f8fafc;
+      --color-fg: #171717;
+      --color-muted: #475569;
+      --color-subtle: #94a3b8;
+      --color-border: #e2e8f0;
+      --color-accent: #2b72e6;
+      --color-accent-soft: #d9e6ff;
+      --color-good: #059669;
+      --color-warn: #d97706;
+      --color-bad: #dc2626;
+    }
+
+    @variant dark {
+      --color-bg: #0f172a;
+      --color-bg-elevated: #1e293b;
+      --color-bg-soft: #334155;
+      --color-fg: #f8fafc;
+      --color-muted: #cbd5e1;
+      --color-subtle: #94a3b8;
+      --color-border: #334155;
+      --color-accent: #5a8ef5;
+      --color-accent-soft: #1e3a5f;
+      --color-good: #34d399;
+      --color-warn: #fbbf24;
+      --color-bad: #f87171;
+    }
+  }
+}

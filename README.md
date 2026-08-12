@@ -1,30 +1,28 @@
-# Rainfall CMS TEAM Hospital Directory
+# Stratus — Rainfall TEAM Battle Cards
 
-Internal **research console** for Rainfall Health — search, map, compare, and profile all CMS TEAM mandated hospitals (~719). Built with **Astro 6** + **Tailwind CSS v4**, fully static (`dist/`).
+Internal **mobile + web app** for Rainfall Health field teams — search CMS TEAM hospitals, swipe battle cards, save targets, and log conference notes. Built with **Expo 57** + **Uniwind** (Tailwind v4), static web export to `dist/`.
 
-**Not** the public marketing site at [rainfallhealth.com](https://www.rainfallhealth.com). Legacy marketing URLs in this repo redirect to `/` via `netlify.toml`.
+**Not** the public marketing site at [rainfallhealth.com](https://www.rainfallhealth.com).
 
 | Environment | URL | Deploy |
 |-------------|-----|--------|
-| Preview | [rainfall-aeo.netlify.app](https://rainfall-aeo.netlify.app) | Manual: build locally, drag `dist/` to [Netlify Drop](https://app.netlify.com/drop) |
-| Local | `http://localhost:4321` | `npm run dev` |
+| Preview | [rainfall-aeo.netlify.app](https://rainfall-aeo.netlify.app) | `npm run build` → Netlify (`dist/`) |
+| Local | Expo web (default port) | `npm run dev` |
 
-Use **Netlify password protection** on preview — the site sets `noindex` and `robots.txt` disallows crawlers, but that is not a substitute for access control.
+Use **Netlify password protection** on preview — internal tool only.
 
 ---
 
 ## Quick start
 
 ```bash
-git clone https://github.com/Bettermeant-Health/rainfall-hospital-directory.git
-cd rainfall-hospital-directory
+git clone https://github.com/kylesmcauliffe/stratus.git
+cd stratus
 npm install
 npm run dev
 ```
 
-**Node:** `22.x` recommended (`netlify.toml`). Newer Node (e.g. 26) often works locally if `npm run build` succeeds.
-
-Copy `.env.example` → `.env` only when refreshing Census demographics (`CENSUS_API_KEY`) or overriding `SITE` for builds.
+**Node:** `20+` recommended. Demo data seeds automatically (`npm run seed:demo`).
 
 ---
 
@@ -32,16 +30,11 @@ Copy `.env.example` → `.env` only when refreshing Census demographics (`CENSUS
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev` | Dev server at :4321 |
-| `npm run check` | Astro type/diagnostics |
-| `npm run build` | `astro check` + static build → `dist/` |
-| `npm run build:staging` | Build with `SITE=https://rainfall-aeo.netlify.app` |
-| `npm run build:drop` | Staging build + security audit |
-| `npm run preview` | Serve `dist/` locally |
-| `npm run validate` | Prettier check + `astro check` |
-| `npm run audit:security` | Verify `dist/_headers` + production `npm audit` |
-
-There is **no test runner** — `npm run check` (also run inside `npm run build`) is the gate.
+| `npm run dev` | Expo web dev server |
+| `npm run build` | Static web export → `dist/` |
+| `npm run seed:demo` | Regenerate 21-hospital demo JSON |
+| `npm run typecheck` | TypeScript check |
+| `npm run refresh:data` | Full CMS + tracker pipeline (needs source CSVs) |
 
 ### Data refresh (optional)
 

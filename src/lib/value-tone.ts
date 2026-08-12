@@ -1,4 +1,4 @@
-import type { CompareTone } from '@/lib/research-benchmarks';
+import type { CompareTone } from './research-benchmarks';
 
 /** Yes/No and similar labels where Yes is favorable (outreach, top 50, etc.). */
 export function yesNoTone(

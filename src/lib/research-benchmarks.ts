@@ -1,5 +1,5 @@
 import benchmarksJson from '@/data/research-benchmarks.json';
-import type { StateSummary } from '@/lib/directory-index';
+import type { StateSummary } from './directory-index';
 
 export interface NationalBenchmarks {
   medianStars: number | null;
