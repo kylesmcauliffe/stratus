@@ -1,30 +1,37 @@
 import { useState } from "react";
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { AppHeader } from "@/components/AppHeader";
 import { Chip } from "@/components/ui/Chip";
-import { askAssistant, STARTER_PROMPTS, type ChatMessage } from "@/lib/assistant";
+import { askAssistantAsync, STARTER_PROMPTS, type ChatMessage } from "@/lib/assistant";
 import { Colors } from "@/constants/theme";
 
 export default function AskScreen() {
   const router = useRouter();
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "assistant",
-      text: "Hi — I'm your Stratus research assistant. Ask about TEAM hospitals, outreach gaps, quality flags, or who to prioritize at your next event.",
+      text: "Hi — I'm Stratus. Ask about TEAM hospitals, outreach gaps, quality flags, or who to prioritize at your next event. On Netlify, answers use the AI gateway; offline, I fall back to on-device search.",
     },
   ]);
 
-  function send(text: string) {
+  async function send(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || loading) return;
     const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: "user", text: trimmed };
-    const reply = askAssistant(trimmed);
-    setMessages((prev) => [...prev, userMsg, reply]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setLoading(true);
+    try {
+      const reply = await askAssistantAsync(trimmed);
+      setMessages((prev) => [...prev, reply]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -37,7 +44,7 @@ export default function AskScreen() {
           <View>
             <AppHeader
               title="Ask Stratus"
-              subtitle="Natural-language search over the TEAM directory — runs on-device"
+              subtitle="AI-assisted research over the TEAM directory (Netlify AI gateway on deploy)"
             />
             <ScrollChips onPick={send} />
           </View>
@@ -81,8 +88,16 @@ export default function AskScreen() {
               onSubmitEditing={() => send(input)}
               returnKeyType="send"
             />
-            <Pressable onPress={() => send(input)} className="mt-3 rounded-[16px] bg-brand-500 py-3 items-center">
-              <Text className="font-semibold text-white">Send</Text>
+            <Pressable
+              onPress={() => send(input)}
+              disabled={loading}
+              className={`mt-3 rounded-[16px] py-3 items-center ${loading ? "bg-brand-300" : "bg-brand-500"}`}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="font-semibold text-white">Send</Text>
+              )}
             </Pressable>
           </View>
         }

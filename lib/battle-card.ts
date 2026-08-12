@@ -165,6 +165,34 @@ export function buildBattleCard(h: DirectoryHospital): BattleCard {
     },
   ];
 
+  if (h.population != null || h.medianIncome != null) {
+    metrics.push({
+      label: "County pop.",
+      value: h.population != null ? h.population.toLocaleString("en-US") : "—",
+      detail: h.county ? `${h.county} County` : null,
+      tone: "neutral",
+    });
+    metrics.push({
+      label: "County income",
+      value: h.medianIncome != null ? `$${Math.round(h.medianIncome / 1000)}k median` : "—",
+      detail: "ACS 5-year estimate",
+      tone: "neutral",
+    });
+  } else if (h.cbsaPopulation != null || h.cbsaMedianIncome != null) {
+    metrics.push({
+      label: "CBSA pop.",
+      value: h.cbsaPopulation != null ? h.cbsaPopulation.toLocaleString("en-US") : "—",
+      detail: h.cbsaName ?? "Metro area",
+      tone: "neutral",
+    });
+    metrics.push({
+      label: "CBSA income",
+      value: h.cbsaMedianIncome != null ? `$${Math.round(h.cbsaMedianIncome / 1000)}k median` : "—",
+      detail: "ACS 5-year (metro proxy)",
+      tone: "neutral",
+    });
+  }
+
   const takeaways: BattleCardTakeaway[] = [];
 
   if (h.hacrpPenalty) {
