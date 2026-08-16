@@ -1,39 +1,18 @@
 import { useMemo } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import Svg, { Circle, G, Rect, Text as SvgText } from "react-native-svg";
+import { Pressable, Text, View } from "react-native";
+import Svg, { G, Path, Rect, Text as SvgText } from "react-native-svg";
 import type { DirectoryHospital } from "@/src/lib/hospital-directory-record";
-import { directoryHospitals, getStateSummary, stateSummariesByState } from "@/src/lib/directory-index";
+import { directoryHospitals, getStateSummary } from "@/src/lib/directory-index";
+import { US_STATE_PATHS, US_VIEWBOX } from "@/src/data/us-state-paths";
 import { Colors } from "@/constants/theme";
-
-/** Albers-ish normalized positions for state labels on a simple US map canvas. */
-const STATE_POS: Record<string, { x: number; y: number }> = {
-  AL: { x: 520, y: 420 }, AK: { x: 120, y: 520 }, AZ: { x: 180, y: 380 },
-  AR: { x: 460, y: 380 }, CA: { x: 90, y: 320 }, CO: { x: 280, y: 300 },
-  CT: { x: 720, y: 220 }, DE: { x: 710, y: 280 }, FL: { x: 620, y: 520 },
-  GA: { x: 580, y: 420 }, HI: { x: 280, y: 560 }, IA: { x: 460, y: 260 },
-  ID: { x: 200, y: 200 }, IL: { x: 520, y: 280 }, IN: { x: 560, y: 280 },
-  KS: { x: 420, y: 320 }, KY: { x: 560, y: 330 }, LA: { x: 480, y: 460 },
-  MA: { x: 740, y: 210 }, MD: { x: 690, y: 280 }, ME: { x: 760, y: 160 },
-  MI: { x: 560, y: 220 }, MN: { x: 460, y: 180 }, MO: { x: 480, y: 320 },
-  MS: { x: 520, y: 440 }, MT: { x: 280, y: 160 }, NC: { x: 640, y: 360 },
-  ND: { x: 420, y: 160 }, NE: { x: 400, y: 280 }, NH: { x: 750, y: 190 },
-  NJ: { x: 710, y: 260 }, NM: { x: 280, y: 400 }, NV: { x: 160, y: 280 },
-  NY: { x: 700, y: 210 }, OH: { x: 590, y: 280 }, OK: { x: 400, y: 380 },
-  OR: { x: 120, y: 180 }, PA: { x: 660, y: 260 }, RI: { x: 755, y: 225 },
-  SC: { x: 640, y: 400 }, SD: { x: 420, y: 220 }, TN: { x: 540, y: 360 },
-  TX: { x: 380, y: 440 }, UT: { x: 220, y: 300 }, VA: { x: 670, y: 320 },
-  VT: { x: 735, y: 180 }, WA: { x: 120, y: 120 }, WI: { x: 500, y: 210 },
-  WV: { x: 640, y: 300 }, WY: { x: 300, y: 240 }, DC: { x: 695, y: 295 },
-};
 
 type MetricKey = "count" | "stars" | "outreach" | "cjr";
 
-function metricValue(state: string, key: MetricKey, hospitals: DirectoryHospital[]): number {
-  const list = hospitals.filter((h) => h.state === state);
+function metricValue(state: string, key: MetricKey): number {
   const summary = getStateSummary(state);
   switch (key) {
     case "count":
-      return list.length;
+      return directoryHospitals.filter((h) => h.state === state).length;
     case "stars":
       return summary?.medianStars ?? 0;
     case "outreach":
@@ -43,37 +22,41 @@ function metricValue(state: string, key: MetricKey, hospitals: DirectoryHospital
   }
 }
 
-function colorFor(value: number, min: number, max: number): string {
-  if (max <= min) return Colors.brand[100];
+function colorFor(value: number, min: number, max: number, empty = false): string {
+  if (empty) return "#e2e8f0";
+  if (max <= min) return "#dbe7ff";
   const t = (value - min) / (max - min);
-  const r = Math.round(219 + (43 - 219) * t);
-  const g = Math.round(230 + (114 - 230) * t);
-  const b = Math.round(255 + (230 - 255) * t);
+  const r = Math.round(219 + (31 - 219) * t);
+  const g = Math.round(230 + (88 - 230) * t);
+  const b = Math.round(255 + (196 - 255) * t);
   return `rgb(${r},${g},${b})`;
+}
+
+function labelFill(fill: string): string {
+  const m = fill.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (!m) return Colors.ink;
+  const lum = (Number(m[1]) * 299 + Number(m[2]) * 587 + Number(m[3]) * 114) / 1000;
+  return lum < 150 ? "#ffffff" : Colors.ink;
 }
 
 function hashSlug(slug: string): number {
   let hash = 0;
-  for (let i = 0; i < slug.length; i += 1) {
-    hash = (hash * 33 + slug.charCodeAt(i)) >>> 0;
-  }
+  for (let i = 0; i < slug.length; i += 1) hash = (hash * 33 + slug.charCodeAt(i)) >>> 0;
   return hash;
 }
 
 function pinPosition(origin: { x: number; y: number }, slug: string, index: number, total: number) {
   const hash = hashSlug(slug);
-  const angle = (index / Math.max(total, 1)) * Math.PI * 2 + (hash % 50) * 0.015;
-  const radius = 26 + (hash % 38);
+  const angle = (index / Math.max(total, 1)) * Math.PI * 2 + (hash % 40) * 0.02;
+  const radius = 10 + (hash % 18);
   return {
-    x: Math.max(24, Math.min(796, origin.x + Math.cos(angle) * radius)),
-    y: Math.max(24, Math.min(560, origin.y + Math.sin(angle) * radius)),
+    x: origin.x + Math.cos(angle) * radius,
+    y: origin.y + Math.sin(angle) * radius,
   };
 }
 
 function pinLabel(hospital: DirectoryHospital, pinMetric: "cjr" | "stars"): string {
-  if (pinMetric === "stars") {
-    return hospital.overallRating != null ? `${hospital.overallRating}★` : "—";
-  }
+  if (pinMetric === "stars") return hospital.overallRating != null ? `${hospital.overallRating}★` : "—";
   return hospital.teamRankByCjr != null ? `#${hospital.teamRankByCjr}` : "•";
 }
 
@@ -89,6 +72,13 @@ interface TeamStateMapProps {
   pinMetric?: "cjr" | "stars";
 }
 
+const METRIC_CAPTION: Record<MetricKey, string> = {
+  count: "Hospital count",
+  stars: "Median CMS stars",
+  outreach: "% outreach",
+  cjr: "CJR priority",
+};
+
 export function TeamStateMap({
   metric = "count",
   selectedState,
@@ -100,112 +90,113 @@ export function TeamStateMap({
   onSelectHospital,
   pinMetric = "cjr",
 }: TeamStateMapProps) {
-  const states = useMemo(() => Object.keys(stateSummariesByState).sort(), []);
+  const states = useMemo(() => Object.keys(US_STATE_PATHS).sort(), []);
 
   const { colors } = useMemo(() => {
-    const values = states.map((st) => metricValue(st, metric, directoryHospitals));
-    const minV = Math.min(...values);
-    const maxV = Math.max(...values);
+    const values = states.map((st) => metricValue(st, metric)).filter((n) => n > 0);
+    const minV = values.length ? Math.min(...values) : 0;
+    const maxV = values.length ? Math.max(...values) : 1;
     const map: Record<string, string> = {};
     states.forEach((st) => {
-      map[st] = colorFor(metricValue(st, metric, directoryHospitals), minV, maxV);
+      const v = metricValue(st, metric);
+      map[st] = colorFor(v, minV, maxV, v === 0);
     });
     return { colors: map };
   }, [metric, states]);
 
-  const height = compact ? 220 : 340;
-  const pins = showHospitalPins && selectedState ? (pinHospitals ?? []).slice(0, 48) : [];
-  const origin = selectedState ? STATE_POS[selectedState] : null;
+  const height = compact ? 196 : 280;
+  const pins = showHospitalPins && selectedState ? (pinHospitals ?? []).slice(0, 40) : [];
+  const origin = selectedState ? US_STATE_PATHS[selectedState] : null;
 
   return (
-    <View className="rounded-[24px] border border-border bg-bg-elevated p-4">
+    <View className="overflow-hidden rounded-[24px] border border-border bg-bg-elevated p-4">
       <View className="mb-3 flex-row items-center justify-between">
         <Text className="text-sm font-semibold text-fg">TEAM hospitals by state</Text>
-        <Text className="text-xs capitalize text-subtle">{metric.replace("cjr", "CJR priority")}</Text>
+        <Text className="text-xs text-subtle">{METRIC_CAPTION[metric]}</Text>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <Svg width={820} height={height} viewBox="0 0 820 600">
-          <G>
-            {states.map((st) => {
-              const pos = STATE_POS[st];
-              if (!pos) return null;
-              const y = compact ? pos.y * 0.55 : pos.y * 0.85;
-              const x = compact ? pos.x * 0.85 : pos.x;
-              const selected = selectedState === st;
-              const count = directoryHospitals.filter((h) => h.state === st).length;
-              const faded = Boolean(selectedState && !selected);
-              return (
-                <G key={st} opacity={faded ? 0.28 : 1}>
-                  <Circle
-                    cx={x}
-                    cy={y}
-                    r={selected ? 18 : Math.max(14, Math.min(20, 10 + count / 8))}
-                    fill={colors[st]}
-                    stroke={selected ? Colors.brand[500] : "#cbd5e1"}
-                    strokeWidth={selected ? 3 : 1}
-                    onPress={() => onSelectState?.(selected ? null : st)}
-                  />
-                  <SvgText
-                    x={x}
-                    y={y + 4}
-                    fill={selected ? Colors.brand[700] : Colors.ink}
-                    fontSize={10}
-                    fontWeight="700"
-                    textAnchor="middle"
-                  >
-                    {st}
-                  </SvgText>
-                </G>
-              );
-            })}
-            {origin
-              ? pins.map((hospital, index) => {
-                  const scaled = {
-                    x: compact ? origin.x * 0.85 : origin.x,
-                    y: compact ? origin.y * 0.55 : origin.y * 0.85,
-                  };
-                  const pos = pinPosition(scaled, hospital.slug, index, pins.length);
-                  const active = selectedHospital === hospital.slug;
-                  const label = pinLabel(hospital, pinMetric);
-                  const w = Math.max(28, label.length * 7 + 10);
-                  return (
-                    <G key={hospital.slug} onPress={() => onSelectHospital?.(hospital.slug)}>
-                      <Rect
-                        x={pos.x - w / 2}
-                        y={pos.y - 11}
-                        width={w}
-                        height={20}
-                        rx={7}
-                        fill={active ? Colors.brand[500] : "#0f172a"}
-                        stroke={active ? Colors.brand[200] : "#1e293b"}
-                        strokeWidth={1}
-                      />
-                      <SvgText
-                        x={pos.x}
-                        y={pos.y + 3}
-                        fill="#ffffff"
-                        fontSize={8}
-                        fontWeight="700"
-                        textAnchor="middle"
-                      >
-                        {label}
-                      </SvgText>
-                    </G>
-                  );
-                })
-              : null}
-          </G>
-        </Svg>
-      </ScrollView>
-      {selectedState ? (
-        <Pressable onPress={() => onSelectState?.(null)} className="mt-2">
-          <Text className="text-sm font-medium text-brand-600">
-            {selectedState}
-            {pins.length ? ` · ${pins.length}${pinHospitals && pinHospitals.length > pins.length ? "+" : ""} locations` : ""}
-            {" · tap to clear"}
-          </Text>
-        </Pressable>
-      ) : null}
+      <Svg width="100%" height={height} viewBox={US_VIEWBOX} preserveAspectRatio="xMidYMid meet">
+        <G>
+          {states.map((st) => {
+            const path = US_STATE_PATHS[st];
+            if (!path) return null;
+            const selected = selectedState === st;
+            const faded = Boolean(selectedState && !selected);
+            const fill = colors[st] ?? "#e2e8f0";
+            const hasHospitals = directoryHospitals.some((h) => h.state === st);
+            return (
+              <G key={st} opacity={faded ? 0.22 : 1}>
+                <Path
+                  d={path.d}
+                  fill={selected ? Colors.brand[500] : fill}
+                  stroke={selected ? Colors.brand[700] : "#f8fafc"}
+                  strokeWidth={selected ? 2 : 0.8}
+                  onPress={() => {
+                    if (!hasHospitals) return;
+                    onSelectState?.(selected ? null : st);
+                  }}
+                />
+                <SvgText
+                  x={path.x}
+                  y={path.y + 3}
+                  fill={selected ? "#ffffff" : labelFill(fill)}
+                  fontSize={compact ? 8 : 9}
+                  fontWeight="700"
+                  textAnchor="middle"
+                >
+                  {st}
+                </SvgText>
+              </G>
+            );
+          })}
+          {origin
+            ? pins.map((hospital, index) => {
+                const pos = pinPosition({ x: origin.x, y: origin.y }, hospital.slug, index, pins.length);
+                const active = selectedHospital === hospital.slug;
+                const label = pinLabel(hospital, pinMetric);
+                const w = Math.max(26, label.length * 6.2 + 8);
+                return (
+                  <G key={hospital.slug} onPress={() => onSelectHospital?.(hospital.slug)}>
+                    <Rect
+                      x={pos.x - w / 2}
+                      y={pos.y - 9}
+                      width={w}
+                      height={16}
+                      rx={5}
+                      fill={active ? "#f8fafc" : "#0f172a"}
+                    />
+                    <SvgText
+                      x={pos.x}
+                      y={pos.y + 2.5}
+                      fill={active ? Colors.brand[700] : "#ffffff"}
+                      fontSize={7}
+                      fontWeight="700"
+                      textAnchor="middle"
+                    >
+                      {label}
+                    </SvgText>
+                  </G>
+                );
+              })
+            : null}
+        </G>
+      </Svg>
+      <View className="mt-3 flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <View className="h-2 w-10 rounded-full" style={{ backgroundColor: colorFor(0, 0, 1) }} />
+          <View className="h-2 w-10 rounded-full" style={{ backgroundColor: colorFor(1, 0, 1) }} />
+          <Text className="text-[10px] text-subtle">Low → high</Text>
+        </View>
+        {selectedState ? (
+          <Pressable onPress={() => onSelectState?.(null)}>
+            <Text className="text-xs font-semibold text-brand-600">
+              {selectedState}
+              {pins.length ? ` · ${pins.length} pins` : ""} · clear
+            </Text>
+          </Pressable>
+        ) : (
+          <Text className="text-[10px] text-subtle">Tap a state</Text>
+        )}
+      </View>
     </View>
   );
 }

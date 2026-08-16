@@ -13,6 +13,7 @@ interface HospitalBrief {
   beds?: number | null;
   system?: string | null;
   flags?: string[];
+  insight?: string;
 }
 
 interface AskBody {
@@ -23,17 +24,11 @@ interface AskBody {
 
 function fallbackText(query: string, hospitals: HospitalBrief[], matchCount: number): string {
   if (!hospitals.length) {
-    return `I couldn't find TEAM hospitals matching "${query}". Try a state code (TX), "top 50 CJR", or "no outreach".`;
+    return `No TEAM hospitals matched “${query}”. Try a state code (TX), “top 50 CJR”, or “no outreach”.`;
   }
-  const lines = hospitals.slice(0, 5).map((h) => {
-    const bits = [
-      h.stars != null ? `${h.stars}★` : null,
-      h.rank != null ? `CJR #${h.rank}` : null,
-      h.outreach ? `${h.outreach} outreach` : null,
-    ].filter(Boolean);
-    return `• ${h.name} (${h.state})${bits.length ? ` — ${bits.join(' · ')}` : ''}`;
-  });
-  return `Found ${matchCount} hospitals for "${query}". Top matches:\n\n${lines.join('\n')}${matchCount > 5 ? `\n\nOpen Home or Compare for all ${matchCount} matches.` : ''}`;
+  const lead = hospitals[0];
+  const greenfield = hospitals.filter((h) => h.outreach === "No").length;
+  return `${matchCount} hospitals fit this search. ${greenfield} of the top matches still have no outreach. Lead with ${lead.name} (${lead.state}${lead.rank != null ? `, CJR #${lead.rank}` : ""}). Open a battle card below for the talk track.`;
 }
 
 export default async (req: Request, _context: Context) => {
@@ -59,13 +54,19 @@ export default async (req: Request, _context: Context) => {
   const hospitalBlock =
     hospitals.length > 0
       ? hospitals
-          .slice(0, 15)
-          .map(
-            (h) =>
-              `- ${h.name} (${h.state}, slug=${h.slug}) | stars=${h.stars ?? '—'} | MSPB=${h.mspb ?? '—'} | CJR rank=${h.rank ?? '—'} | outreach=${h.outreach ?? '—'} | pipeline=${h.pipeline ?? '—'} | beds=${h.beds ?? '—'} | system=${h.system ?? '—'} | flags=${(h.flags ?? []).join(', ') || 'none'}`,
-          )
-          .join('\n')
-      : 'No structured matches supplied.';
+          .slice(0, 12)
+          .map((h) => {
+            const bits = [
+              `${h.name} in ${h.state}`,
+              h.rank != null ? `CJR rank ${h.rank}` : null,
+              h.stars != null ? `${h.stars} CMS stars` : null,
+              h.outreach ? `${h.outreach} outreach` : null,
+              h.insight ?? null,
+            ].filter(Boolean);
+            return `• ${bits.join(". ")}.`;
+          })
+          .join("\n")
+      : "No structured matches supplied.";
 
   try {
     const openai = new OpenAI();
@@ -75,7 +76,7 @@ export default async (req: Request, _context: Context) => {
         {
           role: 'system',
           content:
-            'You are Stratus, Rainfall Health\'s internal research assistant for CMS TEAM hospitals (~719 mandated sites). Answer concisely in 2–4 short paragraphs. Use bullet lists for hospital names when listing matches. Be factual — only cite hospitals from the provided match list. Mention Rainfall outreach, CJR rank, CMS stars, MSPB, and pipeline when relevant. Do not invent contacts or TCV numbers not in the data. End with a practical next step for a field rep at a conference.',
+            'You are Stratus, Rainfall Health’s internal field brief for CMS TEAM hospitals. Write like a sales prep note: 2–4 short sentences, then at most 3 named hospitals. Never echo raw key=value or pipe-delimited dumps. Never invent contacts, TCV, or facts not in the match list. Mention outreach gaps, CJR rank, and CMS stars only in prose. End with one concrete next step for a conference or call.',
         },
         {
           role: 'user',

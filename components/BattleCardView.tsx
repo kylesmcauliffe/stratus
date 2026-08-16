@@ -109,6 +109,18 @@ export function BattleCardView({ card, saved, onToggleSave, compact }: BattleCar
                 ))}
               </View>
 
+              {card.takeaways[0] ? (
+                <View className="mt-4 flex-row gap-2 rounded-[18px] border border-brand-100 bg-brand-50 p-3">
+                  <Sparkles size={16} color={Colors.brand[600]} />
+                  <View className="flex-1">
+                    <Text className="text-[11px] font-semibold uppercase tracking-wide text-brand-700">
+                      {card.takeaways[0].title}
+                    </Text>
+                    <Text className="mt-1 text-sm leading-5 text-paper-ink">{card.takeaways[0].body}</Text>
+                  </View>
+                </View>
+              ) : null}
+
               <View className="mt-4 flex-row flex-wrap justify-between gap-y-3">
                 {visibleMetrics.map((metric) => (
                   <View key={metric.label} className="w-[48%]">

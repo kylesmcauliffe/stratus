@@ -5,7 +5,9 @@ import { useRouter } from "expo-router";
 import { MapPin, Send, Sparkles, Star, Target } from "lucide-react-native";
 import { AppHeader } from "@/components/AppHeader";
 import { HospitalMark } from "@/components/HospitalMark";
+import { StarRow } from "@/components/metrics/StarRow";
 import { askAssistantAsync, STARTER_PROMPTS, type ChatMessage } from "@/lib/assistant";
+import { hospitalInsight } from "@/lib/insights";
 import { Colors } from "@/constants/theme";
 
 const PROMPT_CARDS = [
@@ -44,7 +46,8 @@ export default function AskScreen() {
     {
       id: "welcome",
       role: "assistant",
-      text: "Hi — I'm Stratus. Ask about TEAM hospitals, outreach gaps, quality flags, or who to prioritize at your next event. On Netlify, answers use the AI gateway; offline, I fall back to on-device search.",
+      text: "Ask who to see this week. I’ll brief TEAM hospitals in plain language — outreach gaps, CJR rank, quality flags — and drop battle cards you can open.",
+      source: "local",
     },
   ]);
 
@@ -75,13 +78,10 @@ export default function AskScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120, paddingTop: 16 }}
         ListHeaderComponent={
           <View>
-            <AppHeader
-              title="Ask Stratus"
-              subtitle="AI-assisted research over the TEAM directory"
-            />
+            <AppHeader title="Ask Stratus" subtitle="Field brief over the TEAM directory" />
             {showPrompts ? (
               <View className="mb-4">
-                <Text className="mb-2 text-xs font-semibold uppercase tracking-wide text-subtle">Try one</Text>
+                <Text className="mb-2 text-xs font-semibold uppercase tracking-wide text-subtle">Try a brief</Text>
                 <View className="flex-row flex-wrap justify-between gap-y-3">
                   {PROMPT_CARDS.map((card) => {
                     const Icon = card.icon;
@@ -111,6 +111,11 @@ export default function AskScreen() {
                 item.role === "user" ? "bg-brand-500" : "border border-border bg-bg-elevated"
               }`}
             >
+              {item.role === "assistant" && item.source ? (
+                <Text className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-brand-600">
+                  {item.source === "ai" ? "Live brief" : item.source === "fallback" ? "Directory brief" : "Stratus"}
+                </Text>
+              ) : null}
               <Text className={`text-sm leading-6 ${item.role === "user" ? "text-white" : "text-fg"}`}>
                 {item.text.replace(/\*\*/g, "")}
               </Text>
@@ -121,12 +126,22 @@ export default function AskScreen() {
                   <Pressable
                     key={h.slug}
                     onPress={() => router.push(`/hospital/${h.slug}`)}
-                    className="flex-row items-center gap-3 rounded-[16px] border border-brand-100 bg-brand-50 px-3 py-2"
+                    className="flex-row items-start gap-3 rounded-[16px] border border-border bg-bg-elevated px-3 py-3"
                   >
                     <HospitalMark name={h.name} seed={h.healthSystem ?? h.name} size="sm" />
                     <View className="flex-1">
-                      <Text className="text-sm font-medium text-brand-700">{h.name}</Text>
-                      <Text className="text-xs text-muted">{h.state} · open battle card</Text>
+                      <Text className="text-sm font-semibold text-fg" numberOfLines={1}>
+                        {h.name}
+                      </Text>
+                      <View className="mt-1 flex-row items-center gap-2">
+                        <StarRow value={h.overallRating} size={11} />
+                        {h.teamRankByCjr != null ? (
+                          <Text className="text-[11px] font-semibold text-brand-600">CJR #{h.teamRankByCjr}</Text>
+                        ) : null}
+                      </View>
+                      <Text className="mt-1 text-xs leading-4 text-muted" numberOfLines={2}>
+                        {hospitalInsight(h)}
+                      </Text>
                     </View>
                   </Pressable>
                 ))}
@@ -139,7 +154,7 @@ export default function AskScreen() {
             <View className="mb-3 self-start rounded-[20px] border border-border bg-bg-elevated px-4 py-3">
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator color={Colors.brand[500]} />
-                <Text className="text-sm text-muted">Stratus is thinking…</Text>
+                <Text className="text-sm text-muted">Writing a field brief…</Text>
               </View>
             </View>
           ) : null
@@ -151,7 +166,7 @@ export default function AskScreen() {
           <TextInput
             value={input}
             onChangeText={setInput}
-            placeholder="Ask about hospitals, states, outreach…"
+            placeholder="Who should I see in Florida?"
             placeholderTextColor={Colors.subtle}
             multiline
             className="max-h-[120px] min-h-[48px] flex-1 rounded-[18px] border border-border bg-bg-elevated px-4 py-3 text-fg"
