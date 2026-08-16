@@ -1,14 +1,43 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { MapPin, Send, Sparkles, Star, Target } from "lucide-react-native";
 import { AppHeader } from "@/components/AppHeader";
-import { Chip } from "@/components/ui/Chip";
+import { HospitalMark } from "@/components/HospitalMark";
 import { askAssistantAsync, STARTER_PROMPTS, type ChatMessage } from "@/lib/assistant";
 import { Colors } from "@/constants/theme";
 
+const PROMPT_CARDS = [
+  {
+    title: "CJR gaps",
+    subtitle: "Top 50 with no outreach",
+    prompt: STARTER_PROMPTS[0],
+    icon: Target,
+  },
+  {
+    title: "Texas 5★",
+    subtitle: "Highest-rated in TX",
+    prompt: STARTER_PROMPTS[1],
+    icon: Star,
+  },
+  {
+    title: "HACRP risk",
+    subtitle: "Penalty hospitals in NY",
+    prompt: STARTER_PROMPTS[2],
+    icon: Sparkles,
+  },
+  {
+    title: "Florida trip",
+    subtitle: "Who to see at a conference",
+    prompt: STARTER_PROMPTS[3],
+    icon: MapPin,
+  },
+] as const;
+
 export default function AskScreen() {
   const router = useRouter();
+  const listRef = useRef<FlatList<ChatMessage>>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -34,26 +63,52 @@ export default function AskScreen() {
     }
   }
 
+  const showPrompts = messages.length <= 1;
+
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
       <FlatList
+        ref={listRef}
         data={messages}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 16, paddingTop: 16 }}
+        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120, paddingTop: 16 }}
         ListHeaderComponent={
           <View>
             <AppHeader
               title="Ask Stratus"
-              subtitle="AI-assisted research over the TEAM directory (Netlify AI gateway on deploy)"
+              subtitle="AI-assisted research over the TEAM directory"
             />
-            <ScrollChips onPick={send} />
+            {showPrompts ? (
+              <View className="mb-4">
+                <Text className="mb-2 text-xs font-semibold uppercase tracking-wide text-subtle">Try one</Text>
+                <View className="flex-row flex-wrap justify-between gap-y-3">
+                  {PROMPT_CARDS.map((card) => {
+                    const Icon = card.icon;
+                    return (
+                      <Pressable
+                        key={card.title}
+                        onPress={() => send(card.prompt)}
+                        className="w-[48%] rounded-[20px] border border-border bg-bg-elevated p-3"
+                      >
+                        <View className="mb-2 h-9 w-9 items-center justify-center rounded-2xl bg-brand-50">
+                          <Icon size={16} color={Colors.brand[600]} />
+                        </View>
+                        <Text className="text-sm font-semibold text-fg">{card.title}</Text>
+                        <Text className="mt-0.5 text-xs text-muted">{card.subtitle}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
           </View>
         }
         renderItem={({ item }) => (
           <View className={`mb-3 max-w-[95%] ${item.role === "user" ? "self-end" : "self-start"}`}>
             <View
               className={`rounded-[20px] px-4 py-3 ${
-                item.role === "user" ? "bg-brand-500" : "bg-bg-elevated border border-border"
+                item.role === "user" ? "bg-brand-500" : "border border-border bg-bg-elevated"
               }`}
             >
               <Text className={`text-sm leading-6 ${item.role === "user" ? "text-white" : "text-fg"}`}>
@@ -66,10 +121,13 @@ export default function AskScreen() {
                   <Pressable
                     key={h.slug}
                     onPress={() => router.push(`/hospital/${h.slug}`)}
-                    className="rounded-[14px] bg-brand-50 px-3 py-2 border border-brand-100"
+                    className="flex-row items-center gap-3 rounded-[16px] border border-brand-100 bg-brand-50 px-3 py-2"
                   >
-                    <Text className="text-sm font-medium text-brand-700">{h.name}</Text>
-                    <Text className="text-xs text-muted">{h.state} · open battle card</Text>
+                    <HospitalMark name={h.name} seed={h.healthSystem ?? h.name} size="sm" />
+                    <View className="flex-1">
+                      <Text className="text-sm font-medium text-brand-700">{h.name}</Text>
+                      <Text className="text-xs text-muted">{h.state} · open battle card</Text>
+                    </View>
                   </Pressable>
                 ))}
               </View>
@@ -77,41 +135,38 @@ export default function AskScreen() {
           </View>
         )}
         ListFooterComponent={
-          <View className="pt-2 pb-24">
-            <TextInput
-              value={input}
-              onChangeText={setInput}
-              placeholder="Ask about hospitals, states, outreach…"
-              placeholderTextColor={Colors.subtle}
-              multiline
-              className="min-h-[48px] rounded-[18px] bg-bg-elevated border border-border px-4 py-3 text-fg"
-              onSubmitEditing={() => send(input)}
-              returnKeyType="send"
-            />
-            <Pressable
-              onPress={() => send(input)}
-              disabled={loading}
-              className={`mt-3 rounded-[16px] py-3 items-center ${loading ? "bg-brand-300" : "bg-brand-500"}`}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="font-semibold text-white">Send</Text>
-              )}
-            </Pressable>
-          </View>
+          loading ? (
+            <View className="mb-3 self-start rounded-[20px] border border-border bg-bg-elevated px-4 py-3">
+              <View className="flex-row items-center gap-2">
+                <ActivityIndicator color={Colors.brand[500]} />
+                <Text className="text-sm text-muted">Stratus is thinking…</Text>
+              </View>
+            </View>
+          ) : null
         }
       />
-    </SafeAreaView>
-  );
-}
 
-function ScrollChips({ onPick }: { onPick: (text: string) => void }) {
-  return (
-    <View className="flex-row flex-wrap gap-2 mb-4">
-      {STARTER_PROMPTS.map((prompt) => (
-        <Chip key={prompt} label={prompt} onPress={() => onPick(prompt)} />
-      ))}
-    </View>
+      <View className="absolute bottom-0 left-0 right-0 border-t border-border bg-bg px-4 pb-4 pt-3">
+        <View className="flex-row items-end gap-2">
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="Ask about hospitals, states, outreach…"
+            placeholderTextColor={Colors.subtle}
+            multiline
+            className="max-h-[120px] min-h-[48px] flex-1 rounded-[18px] border border-border bg-bg-elevated px-4 py-3 text-fg"
+            onSubmitEditing={() => send(input)}
+            returnKeyType="send"
+          />
+          <Pressable
+            onPress={() => send(input)}
+            disabled={loading}
+            className={`h-12 w-12 items-center justify-center rounded-full ${loading ? "bg-brand-300" : "bg-brand-500"}`}
+          >
+            {loading ? <ActivityIndicator color="#fff" /> : <Send size={18} color="#fff" />}
+          </Pressable>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }

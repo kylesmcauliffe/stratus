@@ -28,6 +28,12 @@
   --color-warn: #d97706;
   --color-bad: #dc2626;
 
+  --color-paper: #ffffff;
+  --color-paper-ink: #171717;
+  --color-paper-muted: #334155;
+  --color-paper-subtle: #64748b;
+  --color-paper-border: #e2e8f0;
+
   --font-display: "DMSans_700Bold", system-ui, sans-serif;
   --font-sans: "DMSans_400Regular", system-ui, sans-serif;
   --radius-card: 24px;
@@ -50,6 +56,11 @@
       --color-good: #059669;
       --color-warn: #d97706;
       --color-bad: #dc2626;
+      --color-paper: #ffffff;
+      --color-paper-ink: #171717;
+      --color-paper-muted: #334155;
+      --color-paper-subtle: #64748b;
+      --color-paper-border: #e2e8f0;
     }
 
     @variant dark {
@@ -65,6 +76,11 @@
       --color-good: #34d399;
       --color-warn: #fbbf24;
       --color-bad: #f87171;
+      --color-paper: #ffffff;
+      --color-paper-ink: #171717;
+      --color-paper-muted: #334155;
+      --color-paper-subtle: #64748b;
+      --color-paper-border: #e2e8f0;
     }
   }
 }

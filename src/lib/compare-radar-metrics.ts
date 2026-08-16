@@ -1,5 +1,6 @@
 import type { DirectoryHospital } from '@/lib/hospital-directory-record';
 import { TEAM_MANDATED_HOSPITAL_COUNT } from '@/data/team-hospitals';
+import { stateBenchmarks } from '@/src/lib/research-benchmarks';
 
 export interface RadarAxis {
   id: string;
@@ -69,6 +70,56 @@ export function buildCompareRadarData(hospitals: DirectoryHospital[]): RadarChar
   ];
 
   return { axes, labels };
+}
+
+function clampScore(value: number | null | undefined, min: number, max: number, invert = false): number {
+  if (value == null || max <= min) return 0;
+  const t = (value - min) / (max - min);
+  const score = invert ? 1 - t : t;
+  return Math.round(Math.max(0, Math.min(1, score)) * 100);
+}
+
+export function buildHospitalVsPeerRadar(hospital: DirectoryHospital): RadarChartData | null {
+  const bench = stateBenchmarks[hospital.state];
+  if (!bench) return null;
+
+  return {
+    labels: [hospital.name.slice(0, 22), `${hospital.state} median`],
+    axes: [
+      {
+        id: "stars",
+        label: "CMS ★",
+        values: [clampScore(hospital.overallRating, 1, 5), clampScore(bench.medianStars, 1, 5)],
+      },
+      {
+        id: "hvbp",
+        label: "HVBP",
+        values: [clampScore(hospital.hvbpTps, 0, 100), clampScore(bench.medianHvbpTps, 0, 100)],
+      },
+      {
+        id: "mspb",
+        label: "MSPB",
+        values: [clampScore(hospital.mspbScore, 0.85, 1.25, true), clampScore(bench.medianMspb, 0.85, 1.25, true)],
+      },
+      {
+        id: "cjr",
+        label: "CJR",
+        values: [
+          hospital.teamRankByCjr == null
+            ? 0
+            : Math.round(((TEAM_MANDATED_HOSPITAL_COUNT - hospital.teamRankByCjr + 1) / TEAM_MANDATED_HOSPITAL_COUNT) * 100),
+          bench.medianTeamRankCjr == null
+            ? 0
+            : Math.round(((TEAM_MANDATED_HOSPITAL_COUNT - bench.medianTeamRankCjr + 1) / TEAM_MANDATED_HOSPITAL_COUNT) * 100),
+        ],
+      },
+      {
+        id: "hcahps",
+        label: "HCAHPS",
+        values: [clampScore(hospital.hcahpsStar, 1, 5), clampScore(bench.medianHcahpsStar, 1, 5)],
+      },
+    ],
+  };
 }
 
 const RADAR_COLORS = ['#1e5a8a', '#2d7ab8', '#7ec8e8'];

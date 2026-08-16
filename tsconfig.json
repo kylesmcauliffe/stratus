@@ -30,7 +30,8 @@
     "src/lib/compare-radar-metrics.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "uniwind-types.d.ts"
+    "uniwind-types.d.ts",
+    "css.d.ts"
   ],
   "exclude": ["node_modules", "dist", "src/pages", "src/components"]
 }

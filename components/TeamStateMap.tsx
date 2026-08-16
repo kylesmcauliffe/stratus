@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import Svg, { Circle, G, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, G, Rect, Text as SvgText } from "react-native-svg";
 import type { DirectoryHospital } from "@/src/lib/hospital-directory-record";
 import { directoryHospitals, getStateSummary, stateSummariesByState } from "@/src/lib/directory-index";
 import { Colors } from "@/constants/theme";
@@ -52,11 +52,41 @@ function colorFor(value: number, min: number, max: number): string {
   return `rgb(${r},${g},${b})`;
 }
 
+function hashSlug(slug: string): number {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i += 1) {
+    hash = (hash * 33 + slug.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function pinPosition(origin: { x: number; y: number }, slug: string, index: number, total: number) {
+  const hash = hashSlug(slug);
+  const angle = (index / Math.max(total, 1)) * Math.PI * 2 + (hash % 50) * 0.015;
+  const radius = 26 + (hash % 38);
+  return {
+    x: Math.max(24, Math.min(796, origin.x + Math.cos(angle) * radius)),
+    y: Math.max(24, Math.min(560, origin.y + Math.sin(angle) * radius)),
+  };
+}
+
+function pinLabel(hospital: DirectoryHospital, pinMetric: "cjr" | "stars"): string {
+  if (pinMetric === "stars") {
+    return hospital.overallRating != null ? `${hospital.overallRating}★` : "—";
+  }
+  return hospital.teamRankByCjr != null ? `#${hospital.teamRankByCjr}` : "•";
+}
+
 interface TeamStateMapProps {
   metric?: MetricKey;
   selectedState?: string | null;
   onSelectState?: (state: string | null) => void;
   compact?: boolean;
+  showHospitalPins?: boolean;
+  pinHospitals?: DirectoryHospital[];
+  selectedHospital?: string | null;
+  onSelectHospital?: (slug: string) => void;
+  pinMetric?: "cjr" | "stars";
 }
 
 export function TeamStateMap({
@@ -64,10 +94,15 @@ export function TeamStateMap({
   selectedState,
   onSelectState,
   compact,
+  showHospitalPins,
+  pinHospitals,
+  selectedHospital,
+  onSelectHospital,
+  pinMetric = "cjr",
 }: TeamStateMapProps) {
   const states = useMemo(() => Object.keys(stateSummariesByState).sort(), []);
 
-  const { min, max, colors } = useMemo(() => {
+  const { colors } = useMemo(() => {
     const values = states.map((st) => metricValue(st, metric, directoryHospitals));
     const minV = Math.min(...values);
     const maxV = Math.max(...values);
@@ -75,16 +110,18 @@ export function TeamStateMap({
     states.forEach((st) => {
       map[st] = colorFor(metricValue(st, metric, directoryHospitals), minV, maxV);
     });
-    return { min: minV, max: maxV, colors: map };
+    return { colors: map };
   }, [metric, states]);
 
-  const height = compact ? 220 : 320;
+  const height = compact ? 220 : 340;
+  const pins = showHospitalPins && selectedState ? (pinHospitals ?? []).slice(0, 48) : [];
+  const origin = selectedState ? STATE_POS[selectedState] : null;
 
   return (
-    <View className="rounded-[24px] bg-bg-elevated border border-border p-4">
-      <View className="flex-row items-center justify-between mb-3">
+    <View className="rounded-[24px] border border-border bg-bg-elevated p-4">
+      <View className="mb-3 flex-row items-center justify-between">
         <Text className="text-sm font-semibold text-fg">TEAM hospitals by state</Text>
-        <Text className="text-xs text-subtle capitalize">{metric.replace("cjr", "CJR priority")}</Text>
+        <Text className="text-xs capitalize text-subtle">{metric.replace("cjr", "CJR priority")}</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <Svg width={820} height={height} viewBox="0 0 820 600">
@@ -96,12 +133,13 @@ export function TeamStateMap({
               const x = compact ? pos.x * 0.85 : pos.x;
               const selected = selectedState === st;
               const count = directoryHospitals.filter((h) => h.state === st).length;
+              const faded = Boolean(selectedState && !selected);
               return (
-                <G key={st}>
+                <G key={st} opacity={faded ? 0.28 : 1}>
                   <Circle
                     cx={x}
                     cy={y}
-                    r={selected ? 22 : Math.max(14, Math.min(20, 10 + count / 8))}
+                    r={selected ? 18 : Math.max(14, Math.min(20, 10 + count / 8))}
                     fill={colors[st]}
                     stroke={selected ? Colors.brand[500] : "#cbd5e1"}
                     strokeWidth={selected ? 3 : 1}
@@ -120,13 +158,51 @@ export function TeamStateMap({
                 </G>
               );
             })}
+            {origin
+              ? pins.map((hospital, index) => {
+                  const scaled = {
+                    x: compact ? origin.x * 0.85 : origin.x,
+                    y: compact ? origin.y * 0.55 : origin.y * 0.85,
+                  };
+                  const pos = pinPosition(scaled, hospital.slug, index, pins.length);
+                  const active = selectedHospital === hospital.slug;
+                  const label = pinLabel(hospital, pinMetric);
+                  const w = Math.max(28, label.length * 7 + 10);
+                  return (
+                    <G key={hospital.slug} onPress={() => onSelectHospital?.(hospital.slug)}>
+                      <Rect
+                        x={pos.x - w / 2}
+                        y={pos.y - 11}
+                        width={w}
+                        height={20}
+                        rx={7}
+                        fill={active ? Colors.brand[500] : "#0f172a"}
+                        stroke={active ? Colors.brand[200] : "#1e293b"}
+                        strokeWidth={1}
+                      />
+                      <SvgText
+                        x={pos.x}
+                        y={pos.y + 3}
+                        fill="#ffffff"
+                        fontSize={8}
+                        fontWeight="700"
+                        textAnchor="middle"
+                      >
+                        {label}
+                      </SvgText>
+                    </G>
+                  );
+                })
+              : null}
           </G>
         </Svg>
       </ScrollView>
       {selectedState ? (
         <Pressable onPress={() => onSelectState?.(null)} className="mt-2">
-          <Text className="text-sm text-brand-600 font-medium">
-            Filtering: {selectedState} · tap to clear
+          <Text className="text-sm font-medium text-brand-600">
+            {selectedState}
+            {pins.length ? ` · ${pins.length}${pinHospitals && pinHospitals.length > pins.length ? "+" : ""} locations` : ""}
+            {" · tap to clear"}
           </Text>
         </Pressable>
       ) : null}

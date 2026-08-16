@@ -6,13 +6,30 @@ import {
 } from "@/src/lib/research-benchmarks";
 import { TEAM_MANDATED_HOSPITAL_COUNT } from "@/src/data/team-hospitals";
 
+function cjrBarPercent(rank: number | null, total = TEAM_MANDATED_HOSPITAL_COUNT): number | null {
+  if (rank == null || rank < 1) return null;
+  return Math.round(((total - rank + 1) / total) * 100);
+}
+
+function scaleBarPercent(value: number | null, min: number, max: number, invert = false): number | null {
+  if (value == null || max <= min) return null;
+  const t = (value - min) / (max - min);
+  const pct = Math.round((invert ? 1 - t : t) * 100);
+  return Math.max(4, Math.min(100, pct));
+}
+
 export type BattleCardTone = "good" | "warn" | "neutral";
+export type BattleCardMetricKind = "stars" | "ring" | "bar" | "money" | "count";
 
 export interface BattleCardMetric {
   label: string;
   value: string;
   detail: string | null;
   tone: BattleCardTone;
+  kind: BattleCardMetricKind;
+  numeric: number | null;
+  max: number | null;
+  peerPercent: number | null;
 }
 
 export interface BattleCardTakeaway {
@@ -28,6 +45,9 @@ export interface BattleCard {
   city?: string;
   healthSystem?: string;
   region?: string;
+  address?: string;
+  zip?: string;
+  overallRating?: number | null;
   headline: string;
   pitch: string;
   metrics: BattleCardMetric[];
@@ -66,82 +86,85 @@ function buildPitch(h: DirectoryHospital): string {
   return `${h.name} · ${stars} · ${rank} · ${outreach}.`;
 }
 
+function peerCaption(detail: string | null): string | null {
+  if (!detail) return null;
+  const cut = detail.indexOf(" — ");
+  return cut >= 0 ? detail.slice(cut + 3) : detail;
+}
+
 export function buildBattleCard(h: DirectoryHospital): BattleCard {
   const stateBench = stateBenchmarks[h.state];
+  const starsCmp = compareToBenchmark({
+    value: h.overallRating,
+    benchmark: stateBench?.medianStars ?? researchBenchmarks.medianStars,
+    metric: "CMS stars",
+    peerLabel: `${h.state} median`,
+  });
+  const mspbCmp = compareToBenchmark({
+    value: h.mspbScore,
+    benchmark: stateBench?.medianMspb ?? researchBenchmarks.medianMspb,
+    lowerIsBetter: true,
+    metric: "MSPB",
+    peerLabel: `${h.state} median`,
+    format: (n) => n.toFixed(2),
+  });
+  const hvbpCmp = compareToBenchmark({
+    value: h.hvbpTps,
+    benchmark: stateBench?.medianHvbpTps ?? researchBenchmarks.medianHvbpTps,
+    metric: "HVBP",
+    peerLabel: `${h.state} median`,
+    format: (n) => String(Math.round(n)),
+  });
+  const bedsCmp = compareToBenchmark({
+    value: h.beds,
+    benchmark: stateBench?.medianBeds ?? researchBenchmarks.medianBeds,
+    metric: "Beds",
+    peerLabel: `${h.state} median`,
+    format: (n) => n.toLocaleString("en-US"),
+  });
+
+  const bedCeiling = Math.max(500, (stateBench?.medianBeds ?? researchBenchmarks.medianBeds ?? 150) * 3);
+
   const metrics: BattleCardMetric[] = [
     {
       label: "CMS stars",
       value: h.overallRating != null ? `${h.overallRating}/5` : "—",
-      detail:
-        compareToBenchmark({
-          value: h.overallRating,
-          benchmark: stateBench?.medianStars ?? researchBenchmarks.medianStars,
-          metric: "CMS stars",
-          peerLabel: `${h.state} median`,
-        })?.detail ?? null,
-      tone: toneFromCompare(
-        compareToBenchmark({
-          value: h.overallRating,
-          benchmark: stateBench?.medianStars ?? researchBenchmarks.medianStars,
-          metric: "CMS stars",
-          peerLabel: `${h.state} median`,
-        })?.tone,
-      ),
+      detail: peerCaption(starsCmp?.detail ?? null),
+      tone: toneFromCompare(starsCmp?.tone),
+      kind: "stars",
+      numeric: h.overallRating,
+      max: 5,
+      peerPercent: scaleBarPercent(h.overallRating, 1, 5),
     },
     {
       label: "MSPB index",
       value: h.mspbScore != null ? h.mspbScore.toFixed(2) : "—",
-      detail:
-        compareToBenchmark({
-          value: h.mspbScore,
-          benchmark: stateBench?.medianMspb ?? researchBenchmarks.medianMspb,
-          lowerIsBetter: true,
-          metric: "MSPB",
-          peerLabel: `${h.state} median`,
-          format: (n) => n.toFixed(2),
-        })?.detail ?? null,
-      tone: toneFromCompare(
-        compareToBenchmark({
-          value: h.mspbScore,
-          benchmark: stateBench?.medianMspb ?? researchBenchmarks.medianMspb,
-          lowerIsBetter: true,
-          metric: "MSPB",
-          peerLabel: `${h.state} median`,
-        })?.tone,
-      ),
+      detail: peerCaption(mspbCmp?.detail ?? null),
+      tone: toneFromCompare(mspbCmp?.tone),
+      kind: "bar",
+      numeric: h.mspbScore,
+      max: null,
+      peerPercent: scaleBarPercent(h.mspbScore, 0.9, 1.2, true),
     },
     {
       label: "HVBP score",
       value: h.hvbpTps != null ? String(Math.round(h.hvbpTps)) : "—",
-      detail:
-        compareToBenchmark({
-          value: h.hvbpTps,
-          benchmark: stateBench?.medianHvbpTps ?? researchBenchmarks.medianHvbpTps,
-          metric: "HVBP",
-          peerLabel: `${h.state} median`,
-          format: (n) => String(Math.round(n)),
-        })?.detail ?? null,
-      tone: toneFromCompare(
-        compareToBenchmark({
-          value: h.hvbpTps,
-          benchmark: stateBench?.medianHvbpTps ?? researchBenchmarks.medianHvbpTps,
-          metric: "HVBP",
-          peerLabel: `${h.state} median`,
-        })?.tone,
-      ),
+      detail: peerCaption(hvbpCmp?.detail ?? null),
+      tone: toneFromCompare(hvbpCmp?.tone),
+      kind: "ring",
+      numeric: h.hvbpTps != null ? Math.round(h.hvbpTps) : null,
+      max: 100,
+      peerPercent: scaleBarPercent(h.hvbpTps, 0, 100),
     },
     {
       label: "Licensed beds",
       value: h.beds != null ? h.beds.toLocaleString("en-US") : "—",
-      detail:
-        compareToBenchmark({
-          value: h.beds,
-          benchmark: stateBench?.medianBeds ?? researchBenchmarks.medianBeds,
-          metric: "Beds",
-          peerLabel: `${h.state} median`,
-          format: (n) => n.toLocaleString("en-US"),
-        })?.detail ?? null,
+      detail: peerCaption(bedsCmp?.detail ?? null),
       tone: "neutral",
+      kind: "count",
+      numeric: h.beds,
+      max: bedCeiling,
+      peerPercent: scaleBarPercent(h.beds, 0, bedCeiling),
     },
     {
       label: "CJR rank",
@@ -156,12 +179,20 @@ export function buildBattleCard(h: DirectoryHospital): BattleCard {
           : h.teamRankByCjr != null && h.teamRankByCjr > 300
             ? "warn"
             : "neutral",
+      kind: "bar",
+      numeric: h.teamRankByCjr ?? null,
+      max: TEAM_MANDATED_HOSPITAL_COUNT,
+      peerPercent: cjrBarPercent(h.teamRankByCjr ?? null),
     },
     {
       label: "Est. TCV",
       value: h.estTcv != null ? `$${(h.estTcv / 1_000_000).toFixed(1)}M` : "—",
       detail: h.pipelineStatus ? `Pipeline: ${h.pipelineStatus}` : null,
       tone: h.estTcv != null && h.estTcv >= 1_500_000 ? "good" : "neutral",
+      kind: "money",
+      numeric: h.estTcv ?? null,
+      max: 5_000_000,
+      peerPercent: scaleBarPercent(h.estTcv ?? null, 0, 5_000_000),
     },
   ];
 
@@ -171,12 +202,20 @@ export function buildBattleCard(h: DirectoryHospital): BattleCard {
       value: h.population != null ? h.population.toLocaleString("en-US") : "—",
       detail: h.county ? `${h.county} County` : null,
       tone: "neutral",
+      kind: "count",
+      numeric: h.population,
+      max: null,
+      peerPercent: null,
     });
     metrics.push({
       label: "County income",
       value: h.medianIncome != null ? `$${Math.round(h.medianIncome / 1000)}k median` : "—",
       detail: "ACS 5-year estimate",
       tone: "neutral",
+      kind: "money",
+      numeric: h.medianIncome,
+      max: null,
+      peerPercent: null,
     });
   } else if (h.cbsaPopulation != null || h.cbsaMedianIncome != null) {
     metrics.push({
@@ -184,12 +223,20 @@ export function buildBattleCard(h: DirectoryHospital): BattleCard {
       value: h.cbsaPopulation != null ? h.cbsaPopulation.toLocaleString("en-US") : "—",
       detail: h.cbsaName ?? "Metro area",
       tone: "neutral",
+      kind: "count",
+      numeric: h.cbsaPopulation,
+      max: null,
+      peerPercent: null,
     });
     metrics.push({
       label: "CBSA income",
       value: h.cbsaMedianIncome != null ? `$${Math.round(h.cbsaMedianIncome / 1000)}k median` : "—",
       detail: "ACS 5-year (metro proxy)",
       tone: "neutral",
+      kind: "money",
+      numeric: h.cbsaMedianIncome,
+      max: null,
+      peerPercent: null,
     });
   }
 
@@ -250,6 +297,9 @@ export function buildBattleCard(h: DirectoryHospital): BattleCard {
     city: h.city,
     healthSystem: h.healthSystem,
     region: h.region,
+    address: h.address,
+    zip: h.zip,
+    overallRating: h.overallRating,
     headline: h.healthSystem ? `${h.healthSystem} · ${h.state}` : `${h.city ?? "TEAM"} · ${h.state}`,
     pitch: buildPitch(h),
     metrics,
