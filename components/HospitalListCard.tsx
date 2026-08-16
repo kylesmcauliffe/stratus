@@ -42,6 +42,9 @@ export function HospitalListCard({ hospital, saved, onToggleSave }: HospitalList
               </View>
             ) : null}
           </View>
+          <Text className="mt-2 text-xs leading-4 text-muted" numberOfLines={2}>
+            {card.takeaways[0]?.body ?? card.headline}
+          </Text>
         </View>
         {onToggleSave ? (
           <Pressable

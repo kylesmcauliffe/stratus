@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronDown, ChevronUp } from "lucide-react-native";
+import { Building2, ChevronDown, ChevronUp, MapPin, Star, Trophy, Users } from "lucide-react-native";
 import { AppHeader } from "@/components/AppHeader";
+import { EmptyState } from "@/components/EmptyState";
 import { HospitalListCard } from "@/components/HospitalListCard";
 import { TeamStateMap } from "@/components/TeamStateMap";
 import { Chip } from "@/components/ui/Chip";
@@ -33,7 +34,8 @@ export default function MapScreen() {
             {(["count", "stars", "outreach", "cjr"] as const).map((m) => (
               <Chip
                 key={m}
-                label={m === "cjr" ? "CJR" : m}
+                label={m === "cjr" ? "CJR" : m === "count" ? "Count" : m === "stars" ? "Stars" : "Outreach"}
+                icon={m === "cjr" ? Trophy : m === "stars" ? Star : m === "outreach" ? Users : Building2}
                 active={metric === m}
                 onPress={() => setMetric(m)}
               />
@@ -113,7 +115,11 @@ export default function MapScreen() {
         </View>
       ) : (
         <View className="px-5 pb-8 pt-4">
-          <Text className="text-sm text-muted">Select a state on the map to see hospital locations.</Text>
+          <EmptyState
+            icon={MapPin}
+            title="Pick a state"
+            body="Tap a shaded state to drop hospital pins and open the list. Color shows hospital count, stars, outreach, or CJR priority."
+          />
         </View>
       )}
     </SafeAreaView>

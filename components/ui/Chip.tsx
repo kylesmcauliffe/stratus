@@ -1,16 +1,20 @@
 import { Pressable, Text, View, type PressableProps } from "react-native";
+import type { LucideIcon } from "lucide-react-native";
+import { Colors } from "@/constants/theme";
 
 interface ChipProps extends PressableProps {
   label: string;
   active?: boolean;
+  icon?: LucideIcon;
 }
 
-export function Chip({ label, active, className, ...props }: ChipProps & { className?: string }) {
+export function Chip({ label, active, icon: Icon, className, ...props }: ChipProps & { className?: string }) {
   return (
     <Pressable
       {...props}
-      className={`rounded-full px-4 py-2 ${active ? "bg-brand-500" : "bg-bg-elevated border border-border"} ${className ?? ""}`}
+      className={`flex-row items-center gap-1.5 rounded-full px-3.5 py-2 ${active ? "bg-brand-500" : "border border-border bg-bg-elevated"} ${className ?? ""}`}
     >
+      {Icon ? <Icon size={14} color={active ? "#fff" : Colors.brand[500]} /> : null}
       <Text className={`text-sm font-medium ${active ? "text-white" : "text-muted"}`}>{label}</Text>
     </Pressable>
   );

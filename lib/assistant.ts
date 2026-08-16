@@ -2,6 +2,7 @@ import type { DirectoryHospital } from "@/src/lib/hospital-directory-record";
 import { directoryHospitals } from "@/src/lib/directory-index";
 import { buildBattleCard } from "@/lib/battle-card";
 import { filterHospitals, type SearchFilters } from "@/lib/search";
+import { queryInsight, smallTalkReply } from "@/lib/insights";
 
 export interface ChatMessage {
   id: string;
@@ -23,6 +24,7 @@ export interface HospitalBrief {
   beds?: number | null;
   system?: string | null;
   flags?: string[];
+  insight?: string;
 }
 
 function askApiUrl(): string {
@@ -32,6 +34,10 @@ function askApiUrl(): string {
     return `${window.location.origin}/api/ask`;
   }
   return "/api/ask";
+}
+
+export function isSmallTalk(query: string): boolean {
+  return /^(hi|hey|hello|yo|sup|thanks|thank you|ok|okay)[\s!.?]*$/i.test(query.trim());
 }
 
 function parseFilters(query: string): SearchFilters {
@@ -51,7 +57,7 @@ function parseFilters(query: string): SearchFilters {
   if (q.includes("active pipeline")) filters.pipeline = "Active";
 
   const words = query.replace(/[^\w\s]/g, " ").trim();
-  if (words.length > 2 && !filters.state) filters.q = words;
+  if (words.length > 3 && !filters.state && !isSmallTalk(query)) filters.q = words;
 
   return filters;
 }
@@ -65,6 +71,7 @@ function filterHighMspb(list: DirectoryHospital[]): DirectoryHospital[] {
 }
 
 function toBrief(h: DirectoryHospital): HospitalBrief {
+  const card = buildBattleCard(h);
   return {
     slug: h.slug,
     name: h.name,
@@ -76,40 +83,21 @@ function toBrief(h: DirectoryHospital): HospitalBrief {
     pipeline: h.pipelineStatus,
     beds: h.beds,
     system: h.healthSystem,
-    flags: buildBattleCard(h).flags,
+    flags: card.flags,
+    insight: card.takeaways[0]?.title,
   };
 }
 
-function narrative(query: string, hospitals: DirectoryHospital[]): string {
-  const q = query.toLowerCase();
-  if (hospitals.length === 0) {
-    return "I couldn't find hospitals matching that. Try a state code (e.g. TX), system name, or filters like “top 50 CJR” or “no outreach”.";
-  }
-
-  const top = hospitals.slice(0, 5);
-  const lines = top.map((h) => {
-    const card = buildBattleCard(h);
-    return `• **${h.name}** (${h.state}) — ${card.metrics
-      .slice(0, 3)
-      .map((m) => `${m.label}: ${m.value}`)
-      .join(" · ")}`;
-  });
-
-  let intro = `Found **${hospitals.length}** TEAM hospitals`;
-  if (q.includes("hacrp")) intro += " with HACRP penalties";
-  if (q.includes("mspb")) intro += " with elevated MSPB";
-  if (q.includes("conference") || q.includes("pitch")) intro += " worth prepping for your next conversation";
-
-  intro += ". Top matches:\n\n" + lines.join("\n");
-
-  if (hospitals.length > 5) {
-    intro += `\n\nOpen **Home** or **Compare** to explore all ${hospitals.length} matches.`;
-  }
-
-  return intro;
-}
-
 export function askAssistantLocal(query: string): ChatMessage {
+  if (isSmallTalk(query) || /^(help|what can you do|what can)\b/i.test(query.trim())) {
+    return {
+      id: `${Date.now()}`,
+      role: "assistant",
+      text: smallTalkReply(),
+      source: "local",
+    };
+  }
+
   const filters = parseFilters(query);
   let hospitals = filterHospitals(filters);
   const q = query.toLowerCase();
@@ -121,18 +109,8 @@ export function askAssistantLocal(query: string): ChatMessage {
     return {
       id: `${Date.now()}`,
       role: "assistant",
-      text: `There are **${directoryHospitals.length}** hospitals in the TEAM roster. Your query matches **${hospitals.length}**.`,
-      hospitals: hospitals.slice(0, 8),
-      source: "local",
-    };
-  }
-
-  if (q.includes("help") || q.includes("what can")) {
-    return {
-      id: `${Date.now()}`,
-      role: "assistant",
-      text:
-        "Ask me things like:\n\n• “Hospitals in TX with no outreach”\n• “Top 50 CJR in California”\n• “5 star hospitals with HACRP penalty”\n• “High MSPB in the Midwest”\n• “How many TEAM hospitals?”\n\nI'll surface matches you can open as battle cards.",
+      text: `The TEAM roster has ${directoryHospitals.length} hospitals. This search matches ${hospitals.length}.`,
+      hospitals: hospitals.slice(0, 6),
       source: "local",
     };
   }
@@ -140,8 +118,8 @@ export function askAssistantLocal(query: string): ChatMessage {
   return {
     id: `${Date.now()}`,
     role: "assistant",
-    text: narrative(query, hospitals),
-    hospitals: hospitals.slice(0, 8),
+    text: queryInsight(query, hospitals, hospitals.length),
+    hospitals: hospitals.slice(0, 6),
     source: "local",
   };
 }
@@ -153,14 +131,13 @@ export function askAssistant(query: string): ChatMessage {
 
 export async function askAssistantAsync(query: string): Promise<ChatMessage> {
   const local = askAssistantLocal(query);
-  const q = query.toLowerCase();
 
-  if (q.includes("help") || q.includes("what can") || q.includes("how many")) {
+  if (isSmallTalk(query) || /^(help|what can you do|what can|how many)\b/i.test(query.trim())) {
     return local;
   }
 
   const hospitals = local.hospitals ?? [];
-  const matchCount = filterHospitals(parseFilters(query)).length;
+  const matchCount = hospitals.length ? filterHospitals(parseFilters(query)).length : 0;
 
   try {
     const res = await fetch(askApiUrl(), {
